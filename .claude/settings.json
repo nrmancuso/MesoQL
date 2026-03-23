@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\": \"Reminder: update the Obsidian knowledge base in obsidian/ to reflect any changes made this session.\"}'",
+            "statusMessage": "Reminding Claude to update Obsidian vault..."
+          }
+        ]
+      }
+    ]
+  }
+}
