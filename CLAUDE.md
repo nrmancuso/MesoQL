@@ -7,6 +7,13 @@ repository.
 
 Do not add `Co-Authored-By` trailers to commit messages.
 
+## Obsidian Knowledge Base
+
+The `obsidian/` directory is an Obsidian vault used as a living knowledge base for this project.
+At the end of every session, update the relevant notes to reflect any architectural decisions,
+new components, implementation details, or changes made during the session. Keep notes concise
+and interlinked with `[[wikilinks]]`.
+
 ## Project Overview
 
 MesoQL is a self-hostable query engine for semantic search over weather data. It combines a
