@@ -1,8 +1,12 @@
 # MesoQL
 
-MesoQL is an open-source query engine for semantic search over weather data. It combines a SQL-style DSL with vector search (OpenSearch k-NN) and local LLM inference (Ollama) to run expressive hybrid queries over NOAA storm event narratives and NWS Area Forecast Discussions. Fully self-hostable; no API keys required.
+MesoQL is an open-source query engine for semantic search over weather data. It combines a SQL-style
+DSL with vector search (OpenSearch k-NN) and local LLM inference (Ollama) to run expressive hybrid
+queries over NOAA storm event narratives and NWS Area Forecast Discussions. Fully self-hostable; no
+API keys required.
 
-Every query is a hybrid query: structured filters narrow the search space, semantic similarity drives ranking, and an LLM synthesizes or explains results.
+Every query is a hybrid query: structured filters narrow the search space, semantic similarity
+drives ranking, and an LLM synthesizes or explains results.
 
 ## Requirements
 
@@ -56,12 +60,15 @@ EXPLAIN
 LIMIT 5
 ```
 
-See [docs/BUILDING.md](docs/BUILDING.md) for the full build guide and [docs/](docs/) for component-level documentation.
+See [docs/BUILDING.md](docs/BUILDING.md) for the full build guide and [docs/](docs/) for
+component-level documentation.
 
 ## Data Sources
 
-- [NOAA Storm Events Database](https://www.ncdc.noaa.gov/stormevents/ftp.jsp): 1.8M+ storm records from 1950 onward; public domain
-- [NWS Area Forecast Discussions](https://api.weather.gov/products/types/AFD): daily meteorologist-authored forecast discussions; public domain
+- [NOAA Storm Events Database](https://www.ncdc.noaa.gov/stormevents/ftp.jsp): 1.8M+ storm records
+  from 1950 onward; public domain
+- [NWS Area Forecast Discussions](https://api.weather.gov/products/types/AFD): daily
+  meteorologist-authored forecast discussions; public domain
 
 ## License
 

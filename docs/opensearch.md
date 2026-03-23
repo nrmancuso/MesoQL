@@ -1,6 +1,7 @@
 # OpenSearch
 
-MesoQL uses OpenSearch 2.x with the k-NN plugin for vector storage and hybrid search. This document covers index mappings, client setup, and hybrid query construction.
+MesoQL uses OpenSearch 2.x with the k-NN plugin for vector storage and hybrid search. This document
+covers index mappings, client setup, and hybrid query construction.
 
 ## Prerequisites
 
@@ -10,7 +11,8 @@ The k-NN plugin must be loaded. Verify:
 curl http://localhost:9200/_cat/plugins | grep knn
 ```
 
-Set `knn.memory.circuit_breaker.enabled: false` in `opensearch.yml` for local development to avoid memory limits with small heap sizes.
+Set `knn.memory.circuit_breaker.enabled: false` in `opensearch.yml` for local development to avoid
+memory limits with small heap sizes.
 
 ## Index Mappings
 
@@ -82,7 +84,8 @@ PUT /forecast_discussions
 }
 ```
 
-`nomic-embed-text` outputs 768-dimensional vectors. `m: 16` and `ef_construction: 128` are solid HNSW defaults for this scale; tune `ef_search` upward for better recall at the cost of latency.
+`nomic-embed-text` outputs 768-dimensional vectors. `m: 16` and `ef_construction: 128` are solid
+HNSW defaults for this scale; tune `ef_search` upward for better recall at the cost of latency.
 
 ## Java Client Setup
 
@@ -110,7 +113,8 @@ OpenSearchClient client = new OpenSearchClient(transport);
 
 ## Hybrid Query Construction
 
-A hybrid query combines a k-NN vector search with a boolean filter. OpenSearch's `hybrid` query type (2.10+) handles score normalization natively.
+A hybrid query combines a k-NN vector search with a boolean filter. OpenSearch's `hybrid` query type
+(2.10+) handles score normalization natively.
 
 ```java
 public SearchResponse<Map> hybridSearch(
@@ -200,7 +204,8 @@ private Query comparisonToQuery(QueryAST.ComparisonFilter f) {
 
 ## Query Planner: Field Validation
 
-The `QueryPlanner` validates field names and types against a per-source schema before any network calls. Define the schema as a static map:
+The `QueryPlanner` validates field names and types against a per-source schema before any network
+calls. Define the schema as a static map:
 
 ```java
 public static final Map<String, FieldSchema> STORM_EVENTS_FIELDS = Map.of(
