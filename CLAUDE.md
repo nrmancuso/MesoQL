@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Commits
+
+Do not add `Co-Authored-By` trailers to commit messages.
+
 ## Project Overview
 
 MesoQL is a self-hostable query engine for semantic search over weather data. It combines a SQL-style DSL (parsed with ANTLR4) with vector search (OpenSearch k-NN) and local LLM inference (Ollama). No external API keys required.
@@ -95,7 +99,9 @@ HTTP calls via `java.net.http.HttpClient` (no SDK). Two models:
 
 ### CLI (picocli)
 
-Four commands: `query`, `index`, `validate`, `stats`. Packaged as a fat JAR with a shell wrapper named `mesoql`.
+Five commands: `query`, `index`, `validate`, `stats`, `shell`. Packaged as a fat JAR with a shell wrapper named `mesoql`.
+
+`mesoql shell` starts an interactive REPL — reuses the same `QueryExecutor` across queries to avoid reconnection overhead. Type `exit` or `quit` to leave.
 
 ## Documentation
 
