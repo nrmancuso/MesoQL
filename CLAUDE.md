@@ -32,14 +32,15 @@ Data sources: NOAA storm event narratives and NWS Area Forecast Discussions.
 ## Build Commands
 
 ```bash
-mvn clean package        # Build fat JAR (includes ANTLR4 source generation)
-mvn clean compile        # Compile only
-mvn test                 # Run tests
-mvn test -Dtest=FooTest  # Run a single test class
+./gradlew build             # Build fat JAR (includes ANTLR4 source generation)
+./gradlew compileJava       # Compile only
+./gradlew test              # Run tests
+./gradlew test --tests FooTest  # Run a single test class
+./gradlew bootJar           # Build executable Spring Boot JAR
 ```
 
-The ANTLR4 Maven plugin auto-generates parser/lexer from `src/main/resources/MesoQL.g4` into
-`target/generated-sources/antlr4` during compile.
+The Gradle `antlr` plugin auto-generates parser/lexer from `src/main/antlr/MesoQL.g4` into
+`build/generated-sources/antlr/main/java` during compile.
 
 ## Local Stack
 
@@ -60,11 +61,13 @@ ollama pull llama3
 
 | Dependency | Version | Purpose |
 |---|---|---|
+| Spring Boot | 3.3.x | Framework, DI, config binding, fat JAR |
 | ANTLR4 | 4.13.x | Grammar + parser generation |
 | OpenSearch Java Client | 2.6.0 | Vector search |
-| picocli | 4.7.5 | CLI |
-| Jackson | 2.x | JSON |
+| picocli-spring-boot-starter | 4.7.5 | CLI (integrated with Spring Boot) |
 | OpenCSV | 5.9 | CSV ingestion |
+
+Java 21. Jackson is provided by Spring Boot.
 
 ## Architecture
 
@@ -140,5 +143,5 @@ Detailed implementation specs live in `docs/`:
 - `docs/opensearch.md` — index mappings, hybrid query construction, field validation
 - `docs/ollama.md` — embedding/generation calls, prompt design per output clause
 - `docs/ingestion.md` — data acquisition (NOAA FTP, NWS API), chunking, bulk indexing
-- `docs/cli.md` — picocli structure, output modes, fat JAR packaging
-- `docs/BUILDING.md` — full build order, Maven module layout, stack setup
+- `docs/cli.md` — picocli + Spring Boot structure, output modes, fat JAR packaging
+- `docs/BUILDING.md` — full build order, Gradle project layout, stack setup

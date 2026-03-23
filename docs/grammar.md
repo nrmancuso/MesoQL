@@ -3,38 +3,28 @@
 MesoQL's grammar is defined in `src/main/resources/MesoQL.g4` using ANTLR4. The grammar is the
 primary artifact; all parsing, validation, and extension work starts here.
 
-## Maven Setup
+## Gradle Setup
 
-Add the ANTLR4 Maven plugin to `pom.xml`. It generates lexer/parser sources from the `.g4` file at
-compile time into `target/generated-sources/antlr4`.
+Add the `antlr` plugin to `build.gradle.kts`. It generates lexer/parser sources from
+`src/main/antlr/MesoQL.g4` at compile time into `build/generated-sources/antlr/main/java`.
 
-```xml
-<plugin>
-    <groupId>org.antlr</groupId>
-    <artifactId>antlr4-maven-plugin</artifactId>
-    <version>4.13.1</version>
-    <executions>
-        <execution>
-            <goals>
-                <goal>antlr4</goal>
-            </goals>
-        </execution>
-    </executions>
-    <configuration>
-        <sourceDirectory>${basedir}/src/main/resources</sourceDirectory>
-        <listener>false</listener>
-        <visitor>true</visitor>
-    </configuration>
-</plugin>
+```kotlin
+plugins {
+    antlr
+}
 
-<dependency>
-    <groupId>org.antlr</groupId>
-    <artifactId>antlr4-runtime</artifactId>
-    <version>4.13.1</version>
-</dependency>
+dependencies {
+    antlr("org.antlr:antlr4:4.13.1")
+    implementation("org.antlr:antlr4-runtime:4.13.1")
+}
+
+generateGrammarSource {
+    arguments = listOf("-visitor", "-no-listener")
+}
 ```
 
-`listener` is disabled; `visitor` is enabled. MesoQL uses the visitor pattern for AST construction.
+`-no-listener` disables listener generation; `-visitor` enables it. MesoQL uses the visitor pattern
+for AST construction.
 
 ## Grammar Structure
 

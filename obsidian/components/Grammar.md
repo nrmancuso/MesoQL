@@ -1,8 +1,8 @@
 # Grammar
 
-**File:** `src/main/resources/MesoQL.g4`
-**Tool:** ANTLR4 4.13.x, Maven plugin `antlr4-maven-plugin:4.13.1`
-**Generated sources:** `target/generated-sources/antlr4` (at compile time, no manual step)
+**File:** `src/main/antlr/MesoQL.g4`
+**Tool:** ANTLR4 4.13.x, Gradle `antlr` plugin
+**Generated sources:** `build/generated-sources/antlr/main/java` (at compile time, no manual step)
 
 ## Query Structure
 

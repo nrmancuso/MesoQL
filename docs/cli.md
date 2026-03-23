@@ -1,19 +1,30 @@
 # CLI
 
-MesoQL is a CLI tool built with picocli. This document covers dependency setup, command structure,
-and output modes.
+MesoQL is a CLI tool built with picocli and Spring Boot. This document covers dependency setup,
+command structure, and output modes.
 
 ## Dependency
 
-```xml
-<dependency>
-    <groupId>info.picocli</groupId>
-    <artifactId>picocli</artifactId>
-    <version>4.7.5</version>
-</dependency>
+```kotlin
+implementation("info.picocli:picocli-spring-boot-starter:4.7.5")
 ```
 
+The `picocli-spring-boot-starter` integrates picocli with Spring Boot's DI container — all
+`@Command` classes are Spring beans and can use `@Autowired`/constructor injection.
+
 ## Entry Point
+
+```java
+@SpringBootApplication
+public class MesoQLApplication {
+
+    public static void main(String[] args) {
+        System.exit(SpringApplication.exit(
+            SpringApplication.run(MesoQLApplication.class, args)
+        ));
+    }
+}
+```
 
 ```java
 @Command(
@@ -29,12 +40,8 @@ and output modes.
         ShellCommand.class
     }
 )
+@Component
 public class MesoQLCLI implements Runnable {
-
-    public static void main(String[] args) {
-        int exit = new CommandLine(new MesoQLCLI()).execute(args);
-        System.exit(exit);
-    }
 
     @Override
     public void run() {
@@ -275,13 +282,35 @@ generate_model: llama3
 All fields have defaults (see [ollama.md](ollama.md)); the config file only needs to include
 overrides.
 
+## Config
+
+Spring Boot binds config from `src/main/resources/application.yml`:
+
+```yaml
+mesoql:
+  opensearch-url: http://localhost:9200
+  ollama-base-url: http://localhost:11434
+  embed-model: nomic-embed-text
+  generate-model: llama3
+```
+
+Override at runtime with standard Spring Boot mechanisms (`--mesoql.opensearch-url=...`,
+environment variables, etc.).
+
 ## Packaging
 
-Build a fat JAR with the Maven Shade plugin and wrap it in a shell script named `mesoql`:
+Build and run the executable fat JAR via the Spring Boot Gradle plugin:
+
+```bash
+./gradlew bootJar
+# output: build/libs/mesoql-0.1.0.jar
+```
+
+Wrap in a shell script named `mesoql`:
 
 ```bash
 #!/bin/bash
 exec java -jar /usr/local/lib/mesoql/mesoql.jar "$@"
 ```
 
-The fat JAR includes all dependencies; the only external requirement is Java 17+.
+The only external requirement is Java 21.
