@@ -1,10 +1,12 @@
 # Grammar
 
-MesoQL's grammar is defined in `src/main/resources/MesoQL.g4` using ANTLR4. The grammar is the primary artifact; all parsing, validation, and extension work starts here.
+MesoQL's grammar is defined in `src/main/resources/MesoQL.g4` using ANTLR4. The grammar is the
+primary artifact; all parsing, validation, and extension work starts here.
 
 ## Maven Setup
 
-Add the ANTLR4 Maven plugin to `pom.xml`. It generates lexer/parser sources from the `.g4` file at compile time into `target/generated-sources/antlr4`.
+Add the ANTLR4 Maven plugin to `pom.xml`. It generates lexer/parser sources from the `.g4` file at
+compile time into `target/generated-sources/antlr4`.
 
 ```xml
 <plugin>
@@ -48,14 +50,19 @@ query
 
 Key grammar decisions:
 
-- `caseInsensitive = true` (ANTLR 4.10+) handles case-insensitivity globally; no per-token character class workarounds needed
-- Multi-character operators (`>=`, `<=`, `!=`) are declared before single-character variants (`>`, `<`, `=`) in the lexer; ANTLR lexer rules are order-sensitive
-- `BETWEEN x AND y` reuses the `AND` keyword; ANTLR4's LL(*) parser resolves the ambiguity correctly in context
-- The `source` rule is the designated extension point; adding a new data source is a one-line grammar change plus a new `Ingester` implementation
+- `caseInsensitive = true` (ANTLR 4.10+) handles case-insensitivity globally; no per-token
+  character class workarounds needed
+- Multi-character operators (`>=`, `<=`, `!=`) are declared before single-character variants
+  (`>`, `<`, `=`) in the lexer; ANTLR lexer rules are order-sensitive
+- `BETWEEN x AND y` reuses the `AND` keyword; ANTLR4's LL(*) parser resolves the ambiguity
+  correctly in context
+- The `source` rule is the designated extension point; adding a new data source is a one-line
+  grammar change plus a new `Ingester` implementation
 
 ## Visitor Implementation
 
-The ANTLR plugin generates `MesoQLVisitor<T>` and `MesoQLBaseVisitor<T>`. Extend `MesoQLBaseVisitor<QueryAST.Node>` in `MesoQLVisitor.java`:
+The ANTLR plugin generates `MesoQLVisitor<T>` and `MesoQLBaseVisitor<T>`. Extend
+`MesoQLBaseVisitor<QueryAST.Node>` in `MesoQLVisitor.java`:
 
 ```java
 public class MesoQLVisitor extends MesoQLBaseVisitor<QueryAST.Node> {
@@ -162,7 +169,8 @@ public static QueryAST.Query parse(String input) {
 }
 ```
 
-`ThrowingErrorListener` should extend `BaseErrorListener` and throw a `MesoQLSyntaxException` from `syntaxError(...)` with the line, column, and message.
+`ThrowingErrorListener` should extend `BaseErrorListener` and throw a `MesoQLSyntaxException` from
+`syntaxError(...)` with the line, column, and message.
 
 ## Extending Sources
 
@@ -180,5 +188,6 @@ source
 CLIMATE_NORMALS : 'climate_normals' ;
 ```
 
-2. Add field definitions to `QueryPlanner` (see [opensearch.md](opensearch.md) for the validation model)
+2. Add field definitions to `QueryPlanner` (see [opensearch.md](opensearch.md) for the validation
+   model)
 3. Implement `ClimateNormalsIngester` (see [ingestion.md](ingestion.md))

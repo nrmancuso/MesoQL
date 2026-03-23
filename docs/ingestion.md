@@ -1,6 +1,8 @@
 # Ingestion
 
-MesoQL ships ingestion pipelines for two data sources: NOAA Storm Events and NWS Area Forecast Discussions. Both are public domain. This document covers data acquisition, parsing, chunking, embedding, and incremental indexing.
+MesoQL ships ingestion pipelines for two data sources: NOAA Storm Events and NWS Area Forecast
+Discussions. Both are public domain. This document covers data acquisition, parsing, chunking,
+embedding, and incremental indexing.
 
 ## Getting the Data
 
@@ -42,7 +44,8 @@ Key fields to extract:
 
 Concatenate `EPISODE_NARRATIVE` and `EVENT_NARRATIVE` as the document text for embedding.
 
-`DAMAGE_PROPERTY` is encoded as strings like `"10.00K"` or `"1.50M"`. Parse with a multiplier map: `K=1_000`, `M=1_000_000`, `B=1_000_000_000`.
+`DAMAGE_PROPERTY` is encoded as strings like `"10.00K"` or `"1.50M"`. Parse with a multiplier map:
+`K=1_000`, `M=1_000_000`, `B=1_000_000_000`.
 
 ### NWS Area Forecast Discussions
 
@@ -65,9 +68,11 @@ Key fields:
 | `senderName` | `office` | e.g., "NWS Seattle WA" |
 | `productText` | `text` | Full discussion text |
 
-Derive `region` from `senderName` using a static office-to-region map. Derive `season` from `issuanceTime` month.
+Derive `region` from `senderName` using a static office-to-region map. Derive `season` from
+`issuanceTime` month.
 
-The NWS API returns the most recent 500 products per request. For historical backfill, the API has limited history; consider the Iowa Environmental Mesonet (IEM) archive for deeper historical AFDs:
+The NWS API returns the most recent 500 products per request. For historical backfill, the API has
+limited history; consider the Iowa Environmental Mesonet (IEM) archive for deeper historical AFDs:
 
 ```text
 https://mesonet.agron.iastate.edu/api/1/nwstext_search.json
@@ -75,7 +80,8 @@ https://mesonet.agron.iastate.edu/api/1/nwstext_search.json
 
 ## Chunking
 
-Storm event narratives are typically short (under 512 tokens) and should be indexed as whole documents. Skip chunking for `storm_events`.
+Storm event narratives are typically short (under 512 tokens) and should be indexed as whole
+documents. Skip chunking for `storm_events`.
 
 AFD texts can be long (1,000-3,000 tokens). Apply sliding window chunking:
 
@@ -102,7 +108,8 @@ Default: `maxTokens=512`, `overlapTokens=64`.
 
 ## Incremental Indexing
 
-Skip documents already indexed by hashing the source ID and checking OpenSearch before embedding. Embedding is the expensive step; avoid re-embedding unchanged documents.
+Skip documents already indexed by hashing the source ID and checking OpenSearch before embedding.
+Embedding is the expensive step; avoid re-embedding unchanged documents.
 
 ```java
 public boolean isAlreadyIndexed(String index, String docId) throws IOException {
@@ -110,7 +117,8 @@ public boolean isAlreadyIndexed(String index, String docId) throws IOException {
 }
 ```
 
-Use the `event_id` for storm events and the `discussion_id` for AFDs as the OpenSearch document `_id`.
+Use the `event_id` for storm events and the `discussion_id` for AFDs as the OpenSearch document
+`_id`.
 
 ## Bulk Indexing
 
@@ -140,7 +148,8 @@ public void ingestStormEvents(Path csvFile) throws Exception {
 }
 ```
 
-Log progress per batch. For large CSV files (10+ years of data), expect ingestion to take 30-90 minutes on a local machine depending on GPU availability for Ollama.
+Log progress per batch. For large CSV files (10+ years of data), expect ingestion to take 30-90
+minutes on a local machine depending on GPU availability for Ollama.
 
 ## CSV Parsing
 
@@ -171,4 +180,5 @@ try (CSVReader reader = new CSVReaderBuilder(new FileReader(csvFile.toFile()))
 }
 ```
 
-Parse by column name rather than index; NOAA occasionally shifts column positions between file versions.
+Parse by column name rather than index; NOAA occasionally shifts column positions between file
+versions.

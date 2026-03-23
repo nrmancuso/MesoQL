@@ -1,6 +1,8 @@
 # Ollama
 
-MesoQL uses Ollama for both embeddings and LLM generation. No external API keys; Ollama runs locally. This document covers client setup, the embedding call, and prompt design for each output clause.
+MesoQL uses Ollama for both embeddings and LLM generation. No external API keys; Ollama runs
+locally. This document covers client setup, the embedding call, and prompt design for each output
+clause.
 
 ## Prerequisites
 
@@ -41,7 +43,8 @@ public class OllamaClient {
 
 ## Embeddings
 
-Used at both index time (to embed document narratives) and query time (to embed the `SEMANTIC(...)` string).
+Used at both index time (to embed document narratives) and query time (to embed the
+`SEMANTIC(...)` string).
 
 ```java
 public float[] embed(String text) throws IOException, InterruptedException {
@@ -68,7 +71,8 @@ public float[] embed(String text) throws IOException, InterruptedException {
 }
 ```
 
-For bulk ingestion, embed in batches and rate-limit to avoid overwhelming Ollama. A batch size of 32 with a short sleep between batches works well locally.
+For bulk ingestion, embed in batches and rate-limit to avoid overwhelming Ollama. A batch size of 32
+with a short sleep between batches works well locally.
 
 ## Generation
 
@@ -96,7 +100,8 @@ public String generate(String prompt) throws IOException, InterruptedException {
 
 ### SYNTHESIZE
 
-Context window: concatenate the `narrative` or `text` fields of retrieved documents, truncated to fit model context. Then append the user's synthesis question.
+Context window: concatenate the `narrative` or `text` fields of retrieved documents, truncated to
+fit model context. Then append the user's synthesis question.
 
 ```text
 You are an expert meteorologist. The following are real weather event records retrieved from the NOAA Storm Events Database.

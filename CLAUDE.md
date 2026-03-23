@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this
+repository.
 
 ## Commits
 
@@ -8,7 +9,9 @@ Do not add `Co-Authored-By` trailers to commit messages.
 
 ## Project Overview
 
-MesoQL is a self-hostable query engine for semantic search over weather data. It combines a SQL-style DSL (parsed with ANTLR4) with vector search (OpenSearch k-NN) and local LLM inference (Ollama). No external API keys required.
+MesoQL is a self-hostable query engine for semantic search over weather data. It combines a
+SQL-style DSL (parsed with ANTLR4) with vector search (OpenSearch k-NN) and local LLM inference
+(Ollama). No external API keys required.
 
 Data sources: NOAA storm event narratives and NWS Area Forecast Discussions.
 
@@ -21,7 +24,8 @@ mvn test                 # Run tests
 mvn test -Dtest=FooTest  # Run a single test class
 ```
 
-The ANTLR4 Maven plugin auto-generates parser/lexer from `src/main/resources/MesoQL.g4` into `target/generated-sources/antlr4` during compile.
+The ANTLR4 Maven plugin auto-generates parser/lexer from `src/main/resources/MesoQL.g4` into
+`target/generated-sources/antlr4` during compile.
 
 ## Local Stack
 
@@ -64,11 +68,14 @@ Grammar (ANTLR4) → Parser/AST → Query Planner → Query Executor
 
 ### Grammar (`src/main/resources/MesoQL.g4`)
 
-Case-insensitive ANTLR4 grammar. Every query requires `SEMANTIC(...)` as the mandatory clause; structured filters are optional enhancements. The `source` rule is the extension point for new data sources (requires a one-line grammar change + lexer token).
+Case-insensitive ANTLR4 grammar. Every query requires `SEMANTIC(...)` as the mandatory clause;
+structured filters are optional enhancements. The `source` rule is the extension point for new data
+sources (requires a one-line grammar change + lexer token).
 
 ### AST (`MesoQLVisitor.java` + `QueryAST.java`)
 
-Visitor pattern (not listener) over the ANTLR4 parse tree. The AST uses sealed interfaces and records:
+Visitor pattern (not listener) over the ANTLR4 parse tree. The AST uses sealed interfaces and
+records:
 
 ```text
 Query(SearchClause, WhereClause, List<OutputClause>)
@@ -79,11 +86,13 @@ Query(SearchClause, WhereClause, List<OutputClause>)
 
 ### Query Planner
 
-Validates field names and types against static per-source schemas **before** any network calls. Fail fast before touching OpenSearch or Ollama.
+Validates field names and types against static per-source schemas **before** any network calls. Fail
+fast before touching OpenSearch or Ollama.
 
 ### OpenSearch
 
-Two indices: `storm_events` and `forecast_discussions`. Both use 768-dim k-NN vector fields (`nomic-embed-text` model). Queries are hybrid: k-NN vector similarity + boolean filters combined.
+Two indices: `storm_events` and `forecast_discussions`. Both use 768-dim k-NN vector fields
+(`nomic-embed-text` model). Queries are hybrid: k-NN vector similarity + boolean filters combined.
 
 ### Ollama
 
@@ -94,15 +103,20 @@ HTTP calls via `java.net.http.HttpClient` (no SDK). Two models:
 
 ### Ingestion
 
-- **StormEventsIngester**: Parses NOAA CSV; damage strings like `"10.00K"` → `10000`; fatalities = `DEATHS_DIRECT + DEATHS_INDIRECT`
-- **AFDIngester**: Fetches from NWS API; long texts are chunked with 512-token sliding window before embedding
-- Both ingesters skip already-indexed docs (incremental); batch embed in groups of 32 with rate-limiting; bulk index to OpenSearch
+- **StormEventsIngester**: Parses NOAA CSV; damage strings like `"10.00K"` → `10000`; fatalities =
+  `DEATHS_DIRECT + DEATHS_INDIRECT`
+- **AFDIngester**: Fetches from NWS API; long texts are chunked with 512-token sliding window before
+  embedding
+- Both ingesters skip already-indexed docs (incremental); batch embed in groups of 32 with
+  rate-limiting; bulk index to OpenSearch
 
 ### CLI (picocli)
 
-Five commands: `query`, `index`, `validate`, `stats`, `shell`. Packaged as a fat JAR with a shell wrapper named `mesoql`.
+Five commands: `query`, `index`, `validate`, `stats`, `shell`. Packaged as a fat JAR with a shell
+wrapper named `mesoql`.
 
-`mesoql shell` starts an interactive REPL — reuses the same `QueryExecutor` across queries to avoid reconnection overhead. Type `exit` or `quit` to leave.
+`mesoql shell` starts an interactive REPL — reuses the same `QueryExecutor` across queries to
+avoid reconnection overhead. Type `exit` or `quit` to leave.
 
 ## Documentation
 

@@ -1,6 +1,7 @@
 # CLI
 
-MesoQL is a CLI tool built with picocli. This document covers dependency setup, command structure, and output modes.
+MesoQL is a CLI tool built with picocli. This document covers dependency setup, command structure,
+and output modes.
 
 ## Dependency
 
@@ -205,7 +206,8 @@ mesoql stats
 
 ### `mesoql shell`
 
-Starts an interactive REPL for running queries without re-invoking the CLI each time. Useful for exploratory querying.
+Starts an interactive REPL for running queries without re-invoking the CLI each time. Useful for
+exploratory querying.
 
 ```java
 @Command(name = "shell", description = "Start an interactive MesoQL REPL.")
@@ -247,13 +249,17 @@ mesoql shell
 # mesoql> exit
 ```
 
-The REPL reuses the same `QueryExecutor` (and its underlying HTTP clients) across queries, avoiding reconnection overhead.
+The REPL reuses the same `QueryExecutor` (and its underlying HTTP clients) across queries, avoiding
+reconnection overhead.
 
 ## Output Modes
 
-**Human-readable (default):** Results are printed as numbered entries with metadata and narrative text, followed by the synthesis/explanation if an output clause was specified.
+**Human-readable (default):** Results are printed as numbered entries with metadata and narrative
+text, followed by the synthesis/explanation if an output clause was specified.
 
-**JSON (`--json`):** Results are emitted as a JSON array. Each element includes all metadata fields, the narrative text, and the LLM output if applicable. Useful for piping into `jq` or downstream tooling.
+**JSON (`--json`):** Results are emitted as a JSON array. Each element includes all metadata fields,
+the narrative text, and the LLM output if applicable. Useful for piping into `jq` or downstream
+tooling.
 
 ## Config File
 
@@ -266,7 +272,8 @@ embed_model: nomic-embed-text
 generate_model: llama3
 ```
 
-All fields have defaults (see [ollama.md](ollama.md)); the config file only needs to include overrides.
+All fields have defaults (see [ollama.md](ollama.md)); the config file only needs to include
+overrides.
 
 ## Packaging
 
