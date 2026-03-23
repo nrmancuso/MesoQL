@@ -24,7 +24,8 @@ MesoQL is a CLI tool built with picocli. This document covers dependency setup, 
         QueryCommand.class,
         IndexCommand.class,
         ValidateCommand.class,
-        StatsCommand.class
+        StatsCommand.class,
+        ShellCommand.class
     }
 )
 public class MesoQLCLI implements Runnable {
@@ -201,6 +202,52 @@ mesoql stats
 # storm_events                   docs: 1,842,301  size: 4.2 GB
 # forecast_discussions           docs: 214,083    size: 1.1 GB
 ```
+
+### `mesoql shell`
+
+Starts an interactive REPL for running queries without re-invoking the CLI each time. Useful for exploratory querying.
+
+```java
+@Command(name = "shell", description = "Start an interactive MesoQL REPL.")
+public class ShellCommand implements Callable<Integer> {
+
+    @Option(names = "--config", defaultValue = "~/.mesoql/config.yaml")
+    private Path configFile;
+
+    @Override
+    public Integer call() {
+        MesoQLConfig config = MesoQLConfig.load(configFile);
+        QueryExecutor executor = new QueryExecutor(config);
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("MesoQL shell. Type 'exit' to quit.");
+        while (true) {
+            System.out.print("mesoql> ");
+            String line = scanner.nextLine().trim();
+            if (line.equalsIgnoreCase("exit") || line.equalsIgnoreCase("quit")) break;
+            if (line.isEmpty()) continue;
+            try {
+                QueryAST.Query ast = MesoQLParser.parse(line);
+                QueryPlan plan = new QueryPlanner().plan(ast);
+                QueryResult result = executor.execute(plan);
+                new ResultPrinter(false).print(result);
+            } catch (MesoQLSyntaxException | MesoQLValidationException e) {
+                System.err.println("Error: " + e.getMessage());
+            }
+        }
+        return 0;
+    }
+}
+```
+
+Usage:
+
+```bash
+mesoql shell
+# mesoql> SEARCH storm_events WHERE SEMANTIC("hail") LIMIT 3
+# mesoql> exit
+```
+
+The REPL reuses the same `QueryExecutor` (and its underlying HTTP clients) across queries, avoiding reconnection overhead.
 
 ## Output Modes
 
