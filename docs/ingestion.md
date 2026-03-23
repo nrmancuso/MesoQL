@@ -8,18 +8,20 @@ MesoQL ships ingestion pipelines for two data sources: NOAA Storm Events and NWS
 
 Download CSV files by year from NCEI:
 
-```
+```text
 https://www.ncdc.noaa.gov/stormevents/ftp.jsp
 ```
 
 Direct FTP path: `ftp://ftp.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/`
 
 Each year produces three files; use the `details` file:
-```
+
+```text
 StormEvents_details-ftp_v1.0_d2023_c20240117.csv.gz
 ```
 
 Decompress and pass to the ingester:
+
 ```bash
 gunzip StormEvents_details-ftp_v1.0_d2023_c20240117.csv.gz
 mesoql index --source storm_events --data ./StormEvents_details-ftp_v1.0_d2023_c20240117.csv
@@ -66,7 +68,8 @@ Key fields:
 Derive `region` from `senderName` using a static office-to-region map. Derive `season` from `issuanceTime` month.
 
 The NWS API returns the most recent 500 products per request. For historical backfill, the API has limited history; consider the Iowa Environmental Mesonet (IEM) archive for deeper historical AFDs:
-```
+
+```text
 https://mesonet.agron.iastate.edu/api/1/nwstext_search.json
 ```
 

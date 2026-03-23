@@ -98,7 +98,7 @@ public String generate(String prompt) throws IOException, InterruptedException {
 
 Context window: concatenate the `narrative` or `text` fields of retrieved documents, truncated to fit model context. Then append the user's synthesis question.
 
-```
+```text
 You are an expert meteorologist. The following are real weather event records retrieved from the NOAA Storm Events Database.
 
 --- RECORDS ---
@@ -119,7 +119,7 @@ Keep the system framing tight. Don't ask the model to speculate beyond the retri
 
 One call per result. Keep it short; the goal is a one-sentence explanation of semantic relevance.
 
-```
+```text
 You are an expert meteorologist. A user searched for weather events matching the following description:
 
 "{semantic query text}"
@@ -135,7 +135,7 @@ In one sentence, explain why this event is semantically relevant to the user's s
 
 Single call over all retrieved results. Ask the model to group them and label each group.
 
-```
+```text
 You are an expert meteorologist. The following weather records were retrieved for the query:
 
 "{semantic query text}"

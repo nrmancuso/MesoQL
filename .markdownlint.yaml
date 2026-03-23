@@ -1,0 +1,2 @@
+MD013: false  # line length too restrictive for technical docs with code examples
+MD029: false  # ordered list numbering breaks when lists contain fenced code blocks
