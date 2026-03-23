@@ -221,6 +221,7 @@ public static final Map<String, FieldSchema> FORECAST_DISCUSSIONS_FIELDS = Map.o
 ```
 
 Validation checks:
+
 - Field exists in the source schema; throw `MesoQLValidationException` if not
 - `BETWEEN` is only applied to numeric or date fields
 - `IN` is only applied to keyword fields

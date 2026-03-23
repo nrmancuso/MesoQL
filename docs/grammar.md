@@ -36,7 +36,7 @@ Add the ANTLR4 Maven plugin to `pom.xml`. It generates lexer/parser sources from
 
 ## Grammar Structure
 
-```
+```text
 query
   searchClause       → SEARCH <source>
   whereClause        → WHERE semanticClause filterClause*
@@ -47,6 +47,7 @@ query
 ```
 
 Key grammar decisions:
+
 - `caseInsensitive = true` (ANTLR 4.10+) handles case-insensitivity globally; no per-token character class workarounds needed
 - Multi-character operators (`>=`, `<=`, `!=`) are declared before single-character variants (`>`, `<`, `=`) in the lexer; ANTLR lexer rules are order-sensitive
 - `BETWEEN x AND y` reuses the `AND` keyword; ANTLR4's LL(*) parser resolves the ambiguity correctly in context
@@ -168,6 +169,7 @@ public static QueryAST.Query parse(String input) {
 To add a new source (e.g., `climate_normals`):
 
 1. Add to the `source` rule in `MesoQL.g4`:
+
 ```antlr
 source
     : STORM_EVENTS

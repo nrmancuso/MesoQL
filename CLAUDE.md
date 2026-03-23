@@ -52,7 +52,7 @@ ollama pull llama3
 
 ### Component Dependency Order (also the implementation phases)
 
-```
+```text
 Grammar (ANTLR4) → Parser/AST → Query Planner → Query Executor
                                                     ├── OpenSearch Client
                                                     └── Ollama Client
@@ -70,7 +70,7 @@ Case-insensitive ANTLR4 grammar. Every query requires `SEMANTIC(...)` as the man
 
 Visitor pattern (not listener) over the ANTLR4 parse tree. The AST uses sealed interfaces and records:
 
-```
+```text
 Query(SearchClause, WhereClause, List<OutputClause>)
   WhereClause → SemanticClause (required) + List<Filter>
   Filter subtypes: InFilter, BetweenFilter, ComparisonFilter
@@ -88,6 +88,7 @@ Two indices: `storm_events` and `forecast_discussions`. Both use 768-dim k-NN ve
 ### Ollama
 
 HTTP calls via `java.net.http.HttpClient` (no SDK). Two models:
+
 - `nomic-embed-text` — embeddings (used at both index time and query time)
 - `llama3` — generation for `SYNTHESIZE`, `EXPLAIN`, and `CLUSTER BY THEME` output clauses
 
@@ -106,6 +107,7 @@ Five commands: `query`, `index`, `validate`, `stats`, `shell`. Packaged as a fat
 ## Documentation
 
 Detailed implementation specs live in `docs/`:
+
 - `docs/grammar.md` — ANTLR4 setup, visitor pattern, AST type hierarchy
 - `docs/opensearch.md` — index mappings, hybrid query construction, field validation
 - `docs/ollama.md` — embedding/generation calls, prompt design per output clause
