@@ -48,7 +48,7 @@ Concatenate `EPISODE_NARRATIVE` and `EVENT_NARRATIVE` as the document text for e
 
 Fetch via the NWS API. No authentication required.
 
-```
+```text
 # List all AFD product IDs (paginated)
 GET https://api.weather.gov/products?type=AFD&limit=500
 
