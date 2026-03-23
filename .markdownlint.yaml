@@ -1,2 +1,5 @@
-MD013: false  # line length too restrictive for technical docs with code examples
+MD013:
+  line_length: 100
+  code_blocks: false  # code examples can't always be wrapped
+  tables: false       # table columns can't be wrapped
 MD029: false  # ordered list numbering breaks when lists contain fenced code blocks
