@@ -9,10 +9,17 @@ Do not add `Co-Authored-By` trailers to commit messages.
 
 ## Obsidian Knowledge Base
 
-The `obsidian/` directory is an Obsidian vault used as a living knowledge base for this project.
-At the end of every session, update the relevant notes to reflect any architectural decisions,
-new components, implementation details, or changes made during the session. Keep notes concise
-and interlinked with `[[wikilinks]]`.
+The `obsidian/` directory is an Obsidian vault that serves as the persistent memory for this
+project. Its contents are injected into context at the start of every session via a SessionStart
+hook — treat it as the authoritative record of decisions, architecture, and implementation state.
+
+**Reading:** Consult the vault when working on anything architectural, component-level, or related
+to past decisions. The notes are interlinked with `[[wikilinks]]`; follow them to find related
+context.
+
+**Writing:** At the end of every session, update the relevant notes to reflect any decisions,
+new components, implementation details, or changes made. Add new notes for new concepts; update
+existing ones rather than duplicating. Keep notes concise and interlinked.
 
 ## Project Overview
 
