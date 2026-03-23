@@ -28,6 +28,11 @@ Grammar (ANTLR4)
 - **Extension via grammar rule**: Adding a new data source is a one-line grammar change in
   `MesoQL.g4` + a new `Ingester` implementation.
 
+## Stack
+
+- **Java 21**, **Spring Boot 3.3.x**, **Gradle**
+- Spring Boot provides DI, config binding, and the executable fat JAR (`bootJar`)
+
 ## Build Phases
 
 | Phase | Component | Depends On |
@@ -36,4 +41,4 @@ Grammar (ANTLR4)
 | 2 | OpenSearch client | Grammar |
 | 3 | Ollama client | Grammar |
 | 4 | Ingestion pipeline | OpenSearch + Ollama |
-| 5 | CLI | All |
+| 5 | CLI (picocli + Spring Boot) | All |

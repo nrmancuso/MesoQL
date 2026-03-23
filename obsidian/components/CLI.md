@@ -1,7 +1,7 @@
 # CLI
 
-**Framework:** picocli 4.7.5
-**Packaging:** Fat JAR (Maven Shade plugin) + shell wrapper `mesoql`
+**Framework:** picocli 4.7.5 via `picocli-spring-boot-starter` (Spring Boot 3.3.x)
+**Packaging:** `./gradlew bootJar` → executable fat JAR + shell wrapper `mesoql`
 
 ## Commands
 
@@ -29,13 +29,14 @@ leave.
 
 ## Config
 
-`~/.mesoql/config.yaml` (all fields have defaults; only include overrides):
+Spring Boot binds config from `src/main/resources/application.yml`:
 
 ```yaml
-opensearch_url: http://localhost:9200
-ollama_base_url: http://localhost:11434
-embed_model: nomic-embed-text
-generate_model: llama3
+mesoql:
+  opensearch-url: http://localhost:9200
+  ollama-base-url: http://localhost:11434
+  embed-model: nomic-embed-text
+  generate-model: llama3
 ```
 
 ## Related

@@ -10,7 +10,7 @@ Each phase depends on the one before it. Don't skip ahead.
 ### 1. [Grammar](grammar.md)
 
 Start here. The ANTLR4 grammar is the core artifact everything else is built around. This covers
-Maven plugin setup, grammar structure, the visitor implementation, and the QueryAST types. Nothing
+Gradle plugin setup, grammar structure, the visitor implementation, and the QueryAST types. Nothing
 else compiles until the grammar and parser are working.
 
 ### 2. [OpenSearch](opensearch.md)
@@ -33,8 +33,8 @@ queries.
 
 ### 5. [CLI](cli.md)
 
-Wire everything together behind the picocli CLI. The `query`, `index`, `validate`, and `stats`
-commands all depend on components built in steps 1-4.
+Wire everything together behind the picocli CLI backed by Spring Boot. The `query`, `index`,
+`validate`, `stats`, and `shell` commands all depend on components built in steps 1-4.
 
 ## Component Dependency Map
 
@@ -45,25 +45,58 @@ Grammar (ANTLR4)
                     ├── OpenSearch Client  ← OpenSearch indices
                     └── Ollama Client      ← Ollama models
                             └── Ingestion Pipeline
-                                    └── CLI (picocli)
+                                    └── CLI (picocli + Spring Boot)
 ```
 
-## Maven Module Layout
+## Gradle Project Layout
 
-MesoQL is a single Maven module for Phase 1. The ANTLR4 Maven plugin generates parser/lexer sources
-from `src/main/resources/MesoQL.g4` into `target/generated-sources/antlr4` at compile time. No
+MesoQL is a single Gradle project. The Gradle `antlr` plugin generates parser/lexer sources from
+`src/main/antlr/MesoQL.g4` into `build/generated-sources/antlr/main/java` at compile time. No
 manual code generation step is needed.
+
+Key `build.gradle.kts` structure:
+
+```kotlin
+plugins {
+    java
+    antlr
+    id("org.springframework.boot") version "3.3.x"
+    id("io.spring.dependency-management") version "1.1.x"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    antlr("org.antlr:antlr4:4.13.1")
+    implementation("org.antlr:antlr4-runtime:4.13.1")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("info.picocli:picocli-spring-boot-starter:4.7.5")
+    implementation("org.opensearch.client:opensearch-java:2.6.0")
+    implementation("com.opencsv:opencsv:5.9")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+generateGrammarSource {
+    arguments = listOf("-visitor", "-no-listener")
+}
+```
 
 ## Key Dependency Versions
 
 | Dependency | Version |
 |---|---|
+| Java | 21 |
+| Spring Boot | 3.3.x |
 | ANTLR4 | 4.13.x |
-| OpenSearch Java client | 2.x |
-| Ollama Java client (unofficial) | use HTTP directly via `java.net.http.HttpClient` |
-| picocli | 4.7.x |
-| Jackson | 2.x (JSON serialization) |
+| OpenSearch Java client | 2.6.0 |
+| picocli-spring-boot-starter | 4.7.x |
 | OpenCSV | 5.x (Storm Events CSV parsing) |
+
+Jackson is managed by the Spring Boot dependency management plugin.
 
 ## Running the Full Stack Locally
 
@@ -83,7 +116,7 @@ curl http://localhost:9200/_cat/plugins | grep knn
 ollama serve
 
 # Build MesoQL
-mvn clean package
+./gradlew bootJar
 
 # Index and query
 mesoql index --source storm_events --data ./StormEvents_2023.csv
