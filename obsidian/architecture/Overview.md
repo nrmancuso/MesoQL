@@ -30,15 +30,20 @@ Grammar (ANTLR4)
 
 ## Stack
 
-- **Java 21**, **Spring Boot 3.3.x**, **Gradle**
+- **Java 21**, **Spring Boot 3.4.x**, **Gradle 8.14.x**
 - Spring Boot provides DI, config binding, and the executable fat JAR (`bootJar`)
+- Java 21 toolchain via Foojay resolver (`org.gradle.java.home` in `gradle.properties`)
 
-## Build Phases
+## Build Phases (all implemented)
 
-| Phase | Component | Depends On |
+| Phase | Component | Status |
 |---|---|---|
-| 1 | Grammar + AST | — |
-| 2 | OpenSearch client | Grammar |
-| 3 | Ollama client | Grammar |
-| 4 | Ingestion pipeline | OpenSearch + Ollama |
-| 5 | CLI (picocli + Spring Boot) | All |
+| 1 | Grammar + AST | ✅ |
+| 2 | OpenSearch client | ✅ |
+| 3 | Ollama client + config | ✅ |
+| 4 | Query Planner | ✅ |
+| 5 | Query Executor | ✅ |
+| 6 | Ingestion pipeline | ✅ |
+| 7 | CLI (picocli + Spring Boot) | ✅ |
+| 8 | Containerization | ✅ |
+| 9 | Local k8s (k3d) | ✅ |
