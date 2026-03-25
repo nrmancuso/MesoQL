@@ -2,7 +2,7 @@
 
 ## Component Dependency Order
 
-```
+```text
 Grammar (ANTLR4)
     └── QueryAST (sealed interfaces/records)
             └── Query Planner (field validation)
