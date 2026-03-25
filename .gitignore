@@ -4,3 +4,4 @@ build/
 *.class
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
+gradle-local.properties
