@@ -67,6 +67,7 @@ Multi-stage Dockerfile:
 ```
 
 `deploy.sh` steps:
+
 1. Create k3d cluster with local registry (idempotent)
 2. `docker build` + `docker push localhost:5050/mesoql:latest`
 3. `kubectl apply` all manifests
