@@ -15,8 +15,10 @@ Vectors produced by `nomic-embed-text` via Ollama. HNSW params: `m: 16`,
 
 ## Hybrid Query
 
-Every query is hybrid: k-NN vector similarity + boolean filters, combined via OpenSearch's `hybrid`
-query type (2.10+) which handles score normalization natively.
+Every query combines k-NN vector similarity with boolean filters. Implementation uses `bool` query
+with `must` (k-NN) + `filter` (structured clauses). Note: `opensearch-java` 2.6.0 lacks a native
+hybrid query builder, so this uses the typed bool approach instead. Index creation uses the
+low-level REST client (`performRequest`) with raw JSON since `withJson` is not available in 2.6.0.
 
 ## Query Planner: Field Validation
 

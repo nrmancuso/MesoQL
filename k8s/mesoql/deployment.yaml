@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mesoql
+  namespace: mesoql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mesoql
+  template:
+    metadata:
+      labels:
+        app: mesoql
+    spec:
+      containers:
+        - name: mesoql
+          image: localhost:5050/mesoql:latest
+          args: ["shell"]
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+          env:
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: /app/config/application.yml
+      volumes:
+        - name: config
+          configMap:
+            name: mesoql-config

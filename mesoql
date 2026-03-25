@@ -1,0 +1,2 @@
+#!/bin/bash
+exec java -jar "$(dirname "$0")/build/libs/mesoql-0.1.0.jar" "$@"

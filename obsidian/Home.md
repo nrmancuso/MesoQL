@@ -10,6 +10,7 @@ Semantic weather data query engine. Self-hostable; no external API keys.
 - [[components/Ollama]]
 - [[components/Ingestion]]
 - [[components/CLI]]
+- [[architecture/Infrastructure]]
 - [[data-sources/NOAA Storm Events]]
 - [[data-sources/NWS Area Forecast Discussions]]
 

@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ollama-model-pull
+  namespace: mesoql
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: model-pull
+          image: curlimages/curl:latest
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              OLLAMA=http://ollama.mesoql.svc.cluster.local:11434
+
+              echo "Waiting for Ollama to be ready..."
+              until curl -sf "$OLLAMA/api/tags" > /dev/null; do
+                sleep 5
+              done
+
+              echo "Pulling nomic-embed-text..."
+              curl -sf -X POST "$OLLAMA/api/pull" \
+                -H "Content-Type: application/json" \
+                -d '{"name":"nomic-embed-text"}' \
+                --max-time 600
+
+              echo "Pulling llama3..."
+              curl -sf -X POST "$OLLAMA/api/pull" \
+                -H "Content-Type: application/json" \
+                -d '{"name":"llama3"}' \
+                --max-time 600
+
+              echo "Done."

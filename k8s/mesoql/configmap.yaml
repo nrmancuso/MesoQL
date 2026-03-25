@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mesoql-config
+  namespace: mesoql
+data:
+  application.yml: |
+    mesoql:
+      opensearch-url: http://opensearch.mesoql.svc.cluster.local:9200
+      ollama-base-url: http://ollama.mesoql.svc.cluster.local:11434
+      embed-model: nomic-embed-text
+      generate-model: llama3

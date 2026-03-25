@@ -1,0 +1,198 @@
+{
+  "main": {
+    "id": "327c0424377ae0a5",
+    "type": "split",
+    "children": [
+      {
+        "id": "cf5c06374486f966",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4252ed0d22205d8d",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "c0fef0275735a92d",
+    "type": "split",
+    "children": [
+      {
+        "id": "dae06f98d1e33394",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8757ac21b0bdfd1f",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "19818156927dcc03",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "8aa7dfc0ff66f16c",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "64dafcc6b8d95ce3",
+    "type": "split",
+    "children": [
+      {
+        "id": "72680eb88c535a48",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8830efc080ef8d27",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "components/Ollama.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Ollama"
+            }
+          },
+          {
+            "id": "87a975baacd94d85",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "components/Ollama.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Ollama"
+            }
+          },
+          {
+            "id": "bc9a32f018fa7bc3",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "ee75b7e4b2decb31",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "b2f8429de09db3ea",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "components/Ollama.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Ollama"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "4252ed0d22205d8d",
+  "lastOpenFiles": [
+    "architecture/Infrastructure.md",
+    "data-sources/NWS Area Forecast Discussions.md",
+    "data-sources/NOAA Storm Events.md",
+    "data-sources",
+    "components/OpenSearch.md",
+    "components/Ollama.md",
+    "components/Ingestion.md",
+    "components/Grammar.md",
+    "components/CLI.md",
+    "components",
+    "architecture/Overview.md",
+    "architecture",
+    "Home.md"
+  ]
+}
