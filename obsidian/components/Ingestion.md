@@ -15,6 +15,7 @@ Two ingesters: `StormEventsIngester` (NOAA CSV) and `AFDIngester` (NWS API).
 **Chunking:** None — narratives are short (<512 tokens), indexed as whole documents
 
 Key parsing:
+
 - `DAMAGE_PROPERTY`: `"10.00K"` → `10000`, `"1.50M"` → `1500000` (multiplier map)
 - `fatalities`: `DEATHS_DIRECT + DEATHS_INDIRECT`
 - Parse by column name, not index (NOAA shifts columns between versions)

@@ -6,7 +6,7 @@
 
 ## Query Structure
 
-```
+```text
 SEARCH <source>
 WHERE SEMANTIC("...") [AND <filter>]*
 [SYNTHESIZE "..." | CLUSTER BY THEME | EXPLAIN | LIMIT n]*
@@ -17,7 +17,7 @@ WHERE SEMANTIC("...") [AND <filter>]*
 
 ## AST Types
 
-```
+```text
 Query(SearchClause, WhereClause, List<OutputClause>)
   WhereClause → SemanticClause (required) + List<Filter>
   Filter subtypes: InFilter, BetweenFilter, ComparisonFilter

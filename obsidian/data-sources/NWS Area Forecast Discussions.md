@@ -6,7 +6,7 @@
 
 ## Acquisition
 
-```
+```text
 GET https://api.weather.gov/products?type=AFD&limit=500
 GET https://api.weather.gov/products/{productId}
 ```
@@ -14,7 +14,7 @@ GET https://api.weather.gov/products/{productId}
 NWS API returns the most recent 500 products per request. For historical backfill, use the
 Iowa Environmental Mesonet (IEM) archive:
 
-```
+```text
 https://mesonet.agron.iastate.edu/api/1/nwstext_search.json
 ```
 

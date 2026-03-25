@@ -24,6 +24,7 @@ query type (2.10+) which handles score normalization natively.
 network calls. Supported field types: `KEYWORD`, `INTEGER`, `DATE`.
 
 Validation rules:
+
 - Field must exist in source schema
 - `BETWEEN` only on numeric/date fields
 - `IN` only on keyword fields

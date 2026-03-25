@@ -10,7 +10,7 @@ Download from NCEI FTP: `ftp://ftp.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfi
 
 Use the `details` file variant:
 
-```
+```text
 StormEvents_details-ftp_v1.0_d2023_c20240117.csv.gz
 ```
 
