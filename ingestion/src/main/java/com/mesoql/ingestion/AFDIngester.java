@@ -17,6 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.Month;
 import java.util.*;
 
@@ -138,6 +139,9 @@ public class AFDIngester {
             }
 
             log.info("AFD ingestion complete: {} chunks indexed", toIndex.size());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new MesoQLException("AFD ingestion failed", e);
         } catch (Exception e) {
             throw new MesoQLException("AFD ingestion failed", e);
         }
@@ -223,7 +227,7 @@ public class AFDIngester {
                 case SEPTEMBER, OCTOBER, NOVEMBER -> "fall";
                 default -> "winter";
             };
-        } catch (Exception e) {
+        } catch (DateTimeParseException e) {
             return "unknown";
         }
     }

@@ -6,6 +6,7 @@ import com.mesoql.search.OpenSearchService;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvValidationException;
 import org.opensearch.client.opensearch.core.bulk.BulkOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -93,15 +96,15 @@ public class StormEventsIngester {
             }
 
             log.info("Ingestion complete: {} events indexed", toIndex.size());
-        } catch (Exception e) {
+        } catch (IOException | CsvValidationException e) {
             throw new MesoQLException("Storm events ingestion failed", e);
         }
     }
 
-    List<Map<String, Object>> parseCsv(Path csvFile) throws Exception {
+    List<Map<String, Object>> parseCsv(Path csvFile) throws IOException, CsvValidationException {
         final List<Map<String, Object>> events = new ArrayList<>();
 
-        try (CSVReader reader = new CSVReaderBuilder(new FileReader(csvFile.toFile()))
+        try (CSVReader reader = new CSVReaderBuilder(new FileReader(csvFile.toFile(), StandardCharsets.UTF_8))
                 .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
                 .build()) {
 
@@ -135,7 +138,7 @@ public class StormEventsIngester {
                         final LocalDateTime dt = LocalDateTime.parse(beginDate, NOAA_DATE_FORMAT);
                         event.put("begin_date", dt.toString());
                         event.put("year", dt.getYear());
-                    } catch (Exception ignored) {
+                    } catch (DateTimeParseException ignored) {
                         // skip date if unparseable
                     }
                 }

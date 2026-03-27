@@ -1,7 +1,6 @@
 package com.mesoql.ollama;
 
 import java.util.List;
-import java.util.stream.IntStream;
 
 /**
  * Builds LLM prompt strings for SYNTHESIZE, EXPLAIN, and CLUSTER BY THEME output clauses

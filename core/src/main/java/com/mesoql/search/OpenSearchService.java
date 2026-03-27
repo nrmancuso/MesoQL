@@ -134,13 +134,6 @@ public class OpenSearchService {
         return client.indices().stats(s -> s.index(index));
     }
 
-    /**
-     * Returns the underlying {@link OpenSearchClient} for advanced or direct operations.
-     */
-    public OpenSearchClient getClient() {
-        return client;
-    }
-
     private Query filterToQuery(QueryAST.Filter filter) {
         return switch (filter) {
             case QueryAST.InFilter f -> Query.of(q -> q
@@ -170,6 +163,7 @@ public class OpenSearchService {
                         case ">=" -> r.gte(JsonData.of(val));
                         case "<"  -> r.lt(JsonData.of(val));
                         case "<=" -> r.lte(JsonData.of(val));
+                        default -> throw new MesoQLException("Unknown operator: " + f.op());
                     }
                     return r;
                 }));

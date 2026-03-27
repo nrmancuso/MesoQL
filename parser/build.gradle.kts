@@ -1,3 +1,6 @@
+import com.github.spotbugs.snom.SpotBugsTask
+import org.gradle.api.plugins.quality.Checkstyle
+
 plugins {
     antlr
     idea
@@ -20,6 +23,16 @@ tasks.compileJava {
 
 tasks.named<Checkstyle>("checkstyleMain") {
     source = fileTree("src/main/java")
+}
+
+tasks.named<SpotBugsTask>("spotbugsMain") {
+    excludeFilter.set(rootProject.file("config/spotbugs/parser-generated-excludes.xml"))
+    onlyAnalyze.addAll(
+        "com.mesoql.ast.QueryAST*",
+        "com.mesoql.parser.ThrowingErrorListener",
+        "com.mesoql.parser.MesoQLParserHelper",
+        "com.mesoql.parser.MesoQLSyntaxException"
+    )
 }
 
 sourceSets {
