@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -77,13 +78,14 @@ public class OpenSearchService {
 
         final String vecField = vectorField(index);
         final Class<Map> docClass = (Class<Map>) (Class<?>) Map.class;
+        final List<Float> vectorList = toFloatList(queryVector);
 
         if (filters.isEmpty()) {
             return client.search(s -> s
                 .index(index)
                 .query(q -> q.knn(knn -> knn
                     .field(vecField)
-                    .vector(queryVector)
+                    .vector(vectorList)
                     .k(topK)
                 ))
                 .size(topK),
@@ -103,7 +105,7 @@ public class OpenSearchService {
             .query(q -> q.bool(b -> b
                 .must(m -> m.knn(knn -> knn
                     .field(vecField)
-                    .vector(queryVector)
+                    .vector(vectorList)
                     .k(topK)
                 ))
                 .filter(filterQueries)
@@ -132,6 +134,14 @@ public class OpenSearchService {
      */
     public IndicesStatsResponse indexStats(String index) throws IOException {
         return client.indices().stats(s -> s.index(index));
+    }
+
+    private static List<Float> toFloatList(float[] arr) {
+        final List<Float> list = new ArrayList<>(arr.length);
+        for (final float v : arr) {
+            list.add(v);
+        }
+        return list;
     }
 
     private Query filterToQuery(QueryAST.Filter filter) {
