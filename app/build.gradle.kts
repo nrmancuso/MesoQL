@@ -13,12 +13,6 @@ dependencies {
     implementation(libs.jline)
 }
 
-configurations {
-    runtimeClasspath {
-        exclude(group = "commons-logging", module = "commons-logging")
-    }
-}
-
 tasks.bootJar {
     archiveBaseName.set("mesoql")
 }

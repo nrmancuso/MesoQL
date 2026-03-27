@@ -6,7 +6,6 @@ jline = "3.27.1"
 junit = "6.0.3"
 opencsv = "5.9"
 opensearch-java = "3.8.0"
-opensearch-rest-client = "2.11.0"
 picocli-spring-boot-starter = "4.7.5"
 spotbugs-plugin = "6.2.4"
 spotbugs-tool = "4.9.3"
@@ -22,14 +21,13 @@ junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 opencsv = { module = "com.opencsv:opencsv", version.ref = "opencsv" }
 opensearch-java = { module = "org.opensearch.client:opensearch-java", version.ref = "opensearch-java" }
-opensearch-rest-client = { module = "org.opensearch.client:opensearch-rest-client", version.ref = "opensearch-rest-client" }
 picocli-spring-boot-starter = { module = "info.picocli:picocli-spring-boot-starter", version.ref = "picocli-spring-boot-starter" }
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 
 [bundles]
-opensearch-core = ["opensearch-java", "opensearch-rest-client"]
+opensearch-core = ["opensearch-java"]
 
 [plugins]
 spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-plugin" }

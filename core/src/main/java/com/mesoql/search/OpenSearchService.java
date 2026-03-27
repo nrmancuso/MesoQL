@@ -3,10 +3,11 @@ package com.mesoql.search;
 import com.mesoql.MesoQLException;
 import com.mesoql.ast.QueryAST;
 import com.mesoql.config.MesoQLConfig;
-import org.apache.http.HttpHost;
+import org.apache.hc.core5.http.HttpHost;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.FieldValue;
+import org.opensearch.client.opensearch._types.mapping.Property;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.BulkRequest;
 import org.opensearch.client.opensearch.core.BulkResponse;
@@ -14,11 +15,12 @@ import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.bulk.BulkOperation;
 import org.opensearch.client.opensearch.indices.IndicesStatsResponse;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
-import org.opensearch.client.transport.rest_client.RestClientTransport;
+import org.opensearch.client.transport.httpclient5.ApacheHttpClient5Transport;
+import org.opensearch.client.transport.httpclient5.ApacheHttpClient5TransportBuilder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.StringReader;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,17 +32,15 @@ import java.util.Map;
 public class OpenSearchService {
 
     private final OpenSearchClient client;
-
-    private final org.opensearch.client.RestClient restClient;
+    private final ApacheHttpClient5Transport transport;
 
     /**
      * Constructs the service, initialising the OpenSearch REST client from the given config.
      */
     public OpenSearchService(MesoQLConfig config) {
-        this.restClient = org.opensearch.client.RestClient.builder(
-            HttpHost.create(config.getOpensearchUrl())
-        ).build();
-        final RestClientTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+        this.transport = ApacheHttpClient5TransportBuilder.builder(
+            HttpHost.create(URI.create(config.getOpensearchUrl()))
+        ).setMapper(new JacksonJsonpMapper()).build();
         this.client = new OpenSearchClient(transport);
     }
 
@@ -48,22 +48,35 @@ public class OpenSearchService {
      * Creates the {@code storm_events} index if it does not already exist.
      */
     public void createStormEventsIndex() throws IOException {
-        createIndexFromJson("storm_events", STORM_EVENTS_MAPPING);
+        createIndex("storm_events");
     }
 
     /**
      * Creates the {@code forecast_discussions} index if it does not already exist.
      */
     public void createForecastDiscussionsIndex() throws IOException {
-        createIndexFromJson("forecast_discussions", FORECAST_DISCUSSIONS_MAPPING);
+        createIndex("forecast_discussions");
     }
 
-    private void createIndexFromJson(String index, String json) throws IOException {
+    private void createIndex(String index) throws IOException {
         boolean exists = client.indices().exists(e -> e.index(index)).value();
         if (exists) return;
-        final org.opensearch.client.Request req = new org.opensearch.client.Request("PUT", "/" + index);
-        req.setJsonEntity(json);
-        restClient.performRequest(req);
+        client.indices().create(c -> c
+            .index(index)
+            .settings(s -> s
+                .knn(true)
+                .knnAlgoParamEfSearch(100)
+            )
+            .mappings(m -> {
+                if ("storm_events".equals(index)) {
+                    return m.properties(stormEventsProperties());
+                }
+                if ("forecast_discussions".equals(index)) {
+                    return m.properties(forecastDiscussionProperties());
+                }
+                throw new MesoQLException("Unknown index mapping: " + index);
+            })
+        );
     }
 
     /**
@@ -93,9 +106,7 @@ public class OpenSearchService {
             );
         }
 
-        // Combine k-NN with bool filter: use script_score or nested bool approach
-        // since opensearch-java 2.6.0 doesn't have a native hybrid query builder.
-        // We use bool must with knn + filter as a pragmatic approach.
+        // Combine k-NN with bool filter using a bool query with knn + structured filters.
         final List<Query> filterQueries = filters.stream()
             .map(this::filterToQuery)
             .toList();
@@ -190,59 +201,41 @@ public class OpenSearchService {
         };
     }
 
-    private static final String STORM_EVENTS_MAPPING = """
-        {
-          "settings": {
-            "index": { "knn": true, "knn.algo_param.ef_search": 100 }
-          },
-          "mappings": {
-            "properties": {
-              "event_id":        { "type": "keyword" },
-              "state":           { "type": "keyword" },
-              "event_type":      { "type": "keyword" },
-              "year":            { "type": "integer" },
-              "begin_date":      { "type": "date" },
-              "fatalities":      { "type": "integer" },
-              "damage_property": { "type": "long" },
-              "narrative":       { "type": "text" },
-              "narrative_vector": {
-                "type": "knn_vector",
-                "dimension": 768,
-                "method": {
-                  "name": "hnsw",
-                  "engine": "lucene",
-                  "parameters": { "m": 16, "ef_construction": 128 }
-                }
-              }
-            }
-          }
-        }
-        """;
+    private static Map<String, Property> stormEventsProperties() {
+        return Map.of(
+            "event_id", Property.of(p -> p.keyword(k -> k)),
+            "state", Property.of(p -> p.keyword(k -> k)),
+            "event_type", Property.of(p -> p.keyword(k -> k)),
+            "year", Property.of(p -> p.integer(i -> i)),
+            "begin_date", Property.of(p -> p.date(d -> d)),
+            "fatalities", Property.of(p -> p.integer(i -> i)),
+            "damage_property", Property.of(p -> p.long_(l -> l)),
+            "narrative", Property.of(p -> p.text(t -> t)),
+            "narrative_vector", vectorProperty()
+        );
+    }
 
-    private static final String FORECAST_DISCUSSIONS_MAPPING = """
-        {
-          "settings": {
-            "index": { "knn": true, "knn.algo_param.ef_search": 100 }
-          },
-          "mappings": {
-            "properties": {
-              "discussion_id":   { "type": "keyword" },
-              "office":          { "type": "keyword" },
-              "region":          { "type": "keyword" },
-              "issuance_time":   { "type": "date" },
-              "season":          { "type": "keyword" },
-              "text":            { "type": "text" },
-              "text_vector": {
-                "type": "knn_vector",
-                "dimension": 768,
-                "method": {
-                  "name": "hnsw",
-                  "engine": "lucene",
-                  "parameters": { "m": 16, "ef_construction": 128 }
-                }
-              }
-            }
-          }
-        }
-        """;
+    private static Map<String, Property> forecastDiscussionProperties() {
+        return Map.of(
+            "discussion_id", Property.of(p -> p.keyword(k -> k)),
+            "office", Property.of(p -> p.keyword(k -> k)),
+            "region", Property.of(p -> p.keyword(k -> k)),
+            "issuance_time", Property.of(p -> p.date(d -> d)),
+            "season", Property.of(p -> p.keyword(k -> k)),
+            "text", Property.of(p -> p.text(t -> t)),
+            "text_vector", vectorProperty()
+        );
+    }
+
+    private static Property vectorProperty() {
+        return Property.of(p -> p.knnVector(v -> v
+            .dimension(768)
+            .method(m -> m
+                .name("hnsw")
+                .engine("lucene")
+                .parameters("m", JsonData.of(16))
+                .parameters("ef_construction", JsonData.of(128))
+            )
+        ));
+    }
 }
