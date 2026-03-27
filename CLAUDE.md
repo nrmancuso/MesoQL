@@ -16,7 +16,7 @@ Do not add `Co-Authored-By` trailers to commit messages.
 Every commit message subject line must:
 
 - Start with one of these prefixes:
-  - `Issue#123:` — work tracked by an issue
+  - `Issue #123:` — work tracked by an issue
   - `minor:` — small change not worth an issue
   - `doc:` — documentation-only change
   - `infra:` — infrastructure or tooling change
