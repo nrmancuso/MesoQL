@@ -19,12 +19,18 @@ import picocli.CommandLine.Command;
 import java.io.PrintWriter;
 import java.util.concurrent.Callable;
 
+/**
+ * Interactive REPL shell for executing MesoQL queries.
+ */
 @Command(name = "shell", description = "Start an interactive MesoQL shell.")
 @Component
 public class ShellCommand implements Callable<Integer> {
 
     private final QueryExecutor executor;
 
+    /**
+     * Constructs the shell command with the given query executor.
+     */
     public ShellCommand(QueryExecutor executor) {
         this.executor = executor;
     }

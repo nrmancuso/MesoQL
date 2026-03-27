@@ -9,16 +9,34 @@ import picocli.CommandLine.Command;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+/**
+ * Displays OpenSearch index statistics for the primary MesoQL indexes.
+ */
 @Command(name = "stats", description = "Show OpenSearch index stats.")
 @Component
 public class StatsCommand implements Callable<Integer> {
 
+    private static final long BYTES_PER_KIB = 1024L;
+    private static final double BYTES_PER_KIB_DOUBLE = 1024.0;
+    private static final String STORAGE_UNITS = "KMGTPE";
+
     private final OpenSearchService searchService;
 
+    /**
+     * Constructs the stats command.
+     *
+     * @param searchService the OpenSearch service
+     */
     public StatsCommand(OpenSearchService searchService) {
         this.searchService = searchService;
     }
 
+    /**
+     * Prints stats for each known index.
+     *
+     * @return exit code `0` on success
+     * @throws Exception if the stats call fails unexpectedly
+     */
     @Override
     public Integer call() throws Exception {
         for (final String index : List.of("storm_events", "forecast_discussions")) {
@@ -41,9 +59,9 @@ public class StatsCommand implements Callable<Integer> {
     }
 
     private static String humanReadableBytes(long bytes) {
-        if (bytes < 1024) return bytes + " B";
-        final int exp = (int) (Math.log(bytes) / Math.log(1024));
-        final String unit = "KMGTPE".charAt(exp - 1) + "B";
-        return String.format("%.1f %s", bytes / Math.pow(1024, exp), unit);
+        if (bytes < BYTES_PER_KIB) return bytes + " B";
+        final int exp = (int) (Math.log(bytes) / Math.log(BYTES_PER_KIB_DOUBLE));
+        final String unit = STORAGE_UNITS.charAt(exp - 1) + "B";
+        return String.format("%.1f %s", bytes / Math.pow(BYTES_PER_KIB_DOUBLE, exp), unit);
     }
 }

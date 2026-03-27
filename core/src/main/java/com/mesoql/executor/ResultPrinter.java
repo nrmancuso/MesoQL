@@ -8,20 +8,32 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Renders a {@link QueryResult} to a writer in either human-readable or JSON format.
+ */
 public class ResultPrinter {
 
     private final boolean json;
     private final ObjectMapper mapper;
 
+    /**
+     * Constructs a printer that outputs JSON when {@code json} is true, otherwise human-readable text.
+     */
     public ResultPrinter(boolean json) {
         this.json = json;
         this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     }
 
+    /**
+     * Prints the result to standard output.
+     */
     public void print(QueryResult result) {
         print(result, new PrintWriter(System.out, true));
     }
 
+    /**
+     * Prints the result to the given writer.
+     */
     public void print(QueryResult result, PrintWriter out) {
         if (json) {
             printJson(result, out);

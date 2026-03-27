@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * HTTP client for the Ollama API, providing embedding and text-generation operations.
+ */
 @Service
 public class OllamaClient {
 
@@ -30,12 +33,18 @@ public class OllamaClient {
     private final String embedModel;
     private final String generateModel;
 
+    /**
+     * Constructs the client using connection and model settings from the given config.
+     */
     public OllamaClient(MesoQLConfig config) {
         this.baseUrl = config.getOllamaBaseUrl();
         this.embedModel = config.getEmbedModel();
         this.generateModel = config.getGenerateModel();
     }
 
+    /**
+     * Returns the embedding vector for the given text using the configured embed model.
+     */
     public float[] embed(String text) {
         try {
             final String body = mapper.writeValueAsString(Map.of(
@@ -63,6 +72,9 @@ public class OllamaClient {
         }
     }
 
+    /**
+     * Embeds a list of texts in rate-limited batches and returns all resulting vectors.
+     */
     public List<float[]> embedBatch(List<String> texts) {
         final List<float[]> results = new ArrayList<>();
         for (int i = 0; i < texts.size(); i += BATCH_SIZE) {
@@ -83,6 +95,9 @@ public class OllamaClient {
         return results;
     }
 
+    /**
+     * Generates a text response from the configured generation model for the given prompt.
+     */
     public String generate(String prompt) {
         try {
             final String body = mapper.writeValueAsString(Map.of(

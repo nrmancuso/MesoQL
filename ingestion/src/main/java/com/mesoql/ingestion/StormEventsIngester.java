@@ -20,6 +20,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Ingests NOAA storm event CSV files into the OpenSearch storm_events index.
+ */
 @Service
 public class StormEventsIngester {
 
@@ -36,11 +39,17 @@ public class StormEventsIngester {
     private final OpenSearchService searchService;
     private final OllamaClient ollamaClient;
 
+    /**
+     * Constructs a StormEventsIngester with the given search service and Ollama client.
+     */
     public StormEventsIngester(OpenSearchService searchService, OllamaClient ollamaClient) {
         this.searchService = searchService;
         this.ollamaClient = ollamaClient;
     }
 
+    /**
+     * Reads the given CSV file and indexes all new storm events into OpenSearch.
+     */
     public void ingest(Path csvFile) {
         try {
             searchService.createStormEventsIndex();

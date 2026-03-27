@@ -17,8 +17,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.Month;
 import java.util.*;
 
+/**
+ * Ingests Area Forecast Discussion products into OpenSearch.
+ */
 @Service
 public class AFDIngester {
 
@@ -62,11 +66,22 @@ public class AFDIngester {
     private final HttpClient http = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Creates an ingester with the required OpenSearch and embedding clients.
+     *
+     * @param searchService the OpenSearch client wrapper
+     * @param ollamaClient the Ollama client used for embeddings
+     */
     public AFDIngester(OpenSearchService searchService, OllamaClient ollamaClient) {
         this.searchService = searchService;
         this.ollamaClient = ollamaClient;
     }
 
+    /**
+     * Fetches AFD products, chunks them, embeds each chunk, and indexes new chunks.
+     *
+     * @param sinceDate the lower bound for ingestion
+     */
     public void ingest(String sinceDate) {
         try {
             searchService.createForecastDiscussionsIndex();
@@ -128,6 +143,13 @@ public class AFDIngester {
         }
     }
 
+    /**
+     * Fetches AFD products from the NWS API and converts them into indexable documents.
+     *
+     * @return the fetched AFD documents
+     * @throws IOException if the API request or JSON parsing fails
+     * @throws InterruptedException if the HTTP request is interrupted
+     */
     private List<Map<String, Object>> fetchAFDs() throws IOException, InterruptedException {
         final String url = "https://api.weather.gov/products?type=AFD&limit=500";
         final HttpRequest request = HttpRequest.newBuilder()
@@ -161,6 +183,14 @@ public class AFDIngester {
         return docs;
     }
 
+    /**
+     * Splits text into overlapping chunks sized for embedding.
+     *
+     * @param text the source text
+     * @param maxTokens maximum tokens per chunk
+     * @param overlapTokens overlap tokens between adjacent chunks
+     * @return the chunked text
+     */
     static List<String> chunk(String text, int maxTokens, int overlapTokens) {
         final String[] words = text.split("\\s+");
         final int wordsPerChunk = (int) (maxTokens / 1.3);
@@ -177,14 +207,20 @@ public class AFDIngester {
         return chunks;
     }
 
+    /**
+     * Derives the meteorological season for the given ISO-8601 timestamp.
+     *
+     * @param isoDate the timestamp to evaluate
+     * @return the inferred season, or {@code unknown} if parsing fails
+     */
     static String deriveSeason(String isoDate) {
         if (isoDate == null || isoDate.isBlank()) return "unknown";
         try {
-            final int month = LocalDateTime.parse(isoDate, DateTimeFormatter.ISO_DATE_TIME).getMonthValue();
+            final Month month = LocalDateTime.parse(isoDate, DateTimeFormatter.ISO_DATE_TIME).getMonth();
             return switch (month) {
-                case 3, 4, 5 -> "spring";
-                case 6, 7, 8 -> "summer";
-                case 9, 10, 11 -> "fall";
+                case MARCH, APRIL, MAY -> "spring";
+                case JUNE, JULY, AUGUST -> "summer";
+                case SEPTEMBER, OCTOBER, NOVEMBER -> "fall";
                 default -> "winter";
             };
         } catch (Exception e) {
