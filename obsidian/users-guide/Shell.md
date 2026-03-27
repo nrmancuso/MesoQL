@@ -2,7 +2,7 @@
 
 Running `just mesoql` starts the interactive shell — the primary way to use MesoQL.
 
-```
+```text
 $ just mesoql
 MesoQL (type \q to quit)
 
