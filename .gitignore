@@ -1,7 +1,9 @@
 .idea
 build/
 .gradle/
+parser/src/generated/
 *.class
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
 gradle-local.properties
+data/*.csv

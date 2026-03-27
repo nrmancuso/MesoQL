@@ -1,6 +1,6 @@
 # Infrastructure
 
-Local deployment via k3d (k3s-in-Docker) with a reusable container registry.
+Local deployment via Docker Compose for services, with MesoQL running from the bootJar on the host.
 
 ## Stack
 
@@ -8,98 +8,51 @@ Local deployment via k3d (k3s-in-Docker) with a reusable container registry.
 |---|---|---|
 | OpenSearch | `opensearchproject/opensearch:2.11.0` | k-NN vector search |
 | Ollama | `ollama/ollama:latest` | Embeddings + generation |
-| MesoQL | Built from repo (`bootJar`) | Query engine |
+| MesoQL | Host process (`bootJar`) | Query engine |
 
-## k3d Cluster
+## Docker Compose
 
-- Cluster name: `mesoql`
-- Local registry at `localhost:5050` — any project can push images here
-- Port mappings: 9200 (OpenSearch), 11434 (Ollama) forwarded to host
-- Namespace: `mesoql`
+`docker-compose.yml` defines OpenSearch and Ollama as services with named volumes for data
+persistence and health checks for readiness. Port mappings:
 
-## Kubernetes Manifests (`k8s/`)
+- `9200` — OpenSearch
+- `11434` — Ollama
 
-```text
-k8s/
-  k3d-config.yaml
-  namespace.yaml
-  opensearch/
-    deployment.yaml      single-node, security disabled, k-NN plugin
-    service.yaml         ClusterIP :9200
-    pvc.yaml             data persistence
-  ollama/
-    deployment.yaml      model server
-    service.yaml         ClusterIP :11434
-    pvc.yaml             model storage (survives restarts)
-    init-job.yaml        pulls nomic-embed-text + llama3
-  mesoql/
-    deployment.yaml      image from localhost:5050/mesoql:latest
-    configmap.yaml       application.yml pointing to in-cluster services
-    service.yaml
-```
+MesoQL runs on the host via `just mesoql` (the bootJar), connecting to services at
+`localhost:9200` and `localhost:11434`.
 
-## ConfigMap Overrides
+## Volumes
 
-MesoQL's `application.yml` is overridden in-cluster to point at service DNS:
+| Volume | Purpose |
+|---|---|
+| `opensearch-data` | Index data — survives `docker compose down` |
+| `ollama-data` | Downloaded models — survives restarts, avoids re-downloading |
 
-```yaml
-mesoql:
-  opensearch-url: http://opensearch.mesoql.svc.cluster.local:9200
-  ollama-base-url: http://ollama.mesoql.svc.cluster.local:11434
-  embed-model: nomic-embed-text
-  generate-model: llama3
-```
-
-## Containerization
-
-Multi-stage Dockerfile:
-
-1. **Build stage:** `gradle:8.14.1-jdk21` — runs `bootJar`
-2. **Runtime stage:** `eclipse-temurin:21-jre-alpine` — copies fat JAR
-
-`.dockerignore` excludes `.git`, `.idea`, `build`, `obsidian`, `docs`.
-
-## Deploy / Teardown
-
-```bash
-./deploy.sh      # create cluster, build+push image, apply manifests, wait for readiness
-./teardown.sh    # delete cluster
-```
-
-`deploy.sh` steps:
-
-1. Create k3d cluster with local registry (idempotent)
-2. `docker build` + `docker push localhost:5050/mesoql:latest`
-3. `kubectl apply` all manifests
-4. Wait for OpenSearch and Ollama rollouts
-5. Run Ollama model pull job
-6. Deploy MesoQL
-7. Print pod status
+Use `docker compose down -v` to wipe volumes and start fresh.
 
 ## Justfile
 
 Common tasks are scripted in the repo `Justfile` (requires `just`):
 
 ```bash
-just deploy            # full k3d cluster deploy
-just teardown          # delete cluster
-just status            # kubectl get pods -n mesoql
-just forward-opensearch  # port-forward 9200
-just forward-ollama    # port-forward 11434
-just query "SEARCH storm_events WHERE SEMANTIC(\"tornado\") LIMIT 5"
-just test              # run unit tests
-just jar               # build fat JAR
+just up              # start OpenSearch + Ollama
+just down            # stop services
+just clean           # stop services and delete data volumes
+just status          # docker compose ps
+just logs opensearch # follow logs for a service
+just pull-models     # pull nomic-embed-text and llama3 into Ollama
+just jar             # build fat JAR
+just test            # run unit tests
 ```
 
 ## Prerequisites
 
 - Docker Desktop
-- k3d (`brew install k3d`)
 - just (`brew install just`)
 
 ## Related
 
 - [[architecture/Overview]] — component dependency order
 - [[components/OpenSearch]] — index mappings and k-NN config
-- [[components/Ollama]] — models pulled by init job
+- [[components/Ollama]] — models pulled by `just pull-models`
 - [[components/CLI]] — fat JAR packaging

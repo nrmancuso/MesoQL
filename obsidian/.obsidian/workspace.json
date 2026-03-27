@@ -11,10 +11,14 @@
             "id": "4252ed0d22205d8d",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "users-guide/Query Language.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Query Language"
             }
           }
         ]
@@ -181,6 +185,14 @@
   },
   "active": "4252ed0d22205d8d",
   "lastOpenFiles": [
+    "users-guide/Quick Start.md",
+    "users-guide/Deployment.md",
+    "users-guide/Data Ingestion.md",
+    "users-guide/Query Language.md",
+    "Running.md",
+    "users-guide/Shell.md",
+    "users-guide",
+    "Home.md",
     "architecture/Infrastructure.md",
     "data-sources/NWS Area Forecast Discussions.md",
     "data-sources/NOAA Storm Events.md",
@@ -192,7 +204,6 @@
     "components/CLI.md",
     "components",
     "architecture/Overview.md",
-    "architecture",
-    "Home.md"
+    "architecture"
   ]
 }
