@@ -1,5 +1,0 @@
-mesoql:
-  opensearch-url: http://localhost:9200
-  ollama-base-url: http://localhost:11434
-  embed-model: nomic-embed-text
-  generate-model: llama3

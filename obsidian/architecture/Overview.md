@@ -45,5 +45,4 @@ Grammar (ANTLR4)
 | 5 | Query Executor | ✅ |
 | 6 | Ingestion pipeline | ✅ |
 | 7 | CLI (picocli + Spring Boot) | ✅ |
-| 8 | Containerization | ✅ |
-| 9 | Local k8s (k3d) | ✅ |
+| 8 | Docker Compose (services) | ✅ |

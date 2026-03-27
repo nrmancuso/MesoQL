@@ -3,6 +3,12 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this
 repository.
 
+## Code Style
+
+- **No `var`**: Always use explicit types for local variable declarations.
+- **`final` local variables**: All local variables must be declared `final`.
+- **No `final` on parameters**: Method parameters must not use the `final` keyword.
+
 ## Commits
 
 Do not add `Co-Authored-By` trailers to commit messages.
@@ -45,26 +51,21 @@ The Gradle `antlr` plugin auto-generates parser/lexer from `src/main/antlr/MesoQ
 ## Local Stack
 
 ```bash
-# OpenSearch with k-NN plugin
-docker run -p 9200:9200 -p 9600:9600 \
-  -e "discovery.type=single-node" \
-  -e "plugins.security.disabled=true" \
-  opensearchproject/opensearch:2.11.0
-
-# Ollama
-ollama serve
-ollama pull nomic-embed-text
-ollama pull llama3
+just up             # starts OpenSearch + Ollama via Docker Compose
+just pull-models    # pulls nomic-embed-text and llama3 into Ollama
+just jar            # builds fat JAR
+just mesoql         # starts interactive shell
 ```
 
 ## Key Dependencies
 
 | Dependency | Version | Purpose |
 |---|---|---|
-| Spring Boot | 3.3.x | Framework, DI, config binding, fat JAR |
+| Spring Boot | 3.4.x | Framework, DI, config binding, fat JAR |
 | ANTLR4 | 4.13.x | Grammar + parser generation |
 | OpenSearch Java Client | 2.6.0 | Vector search |
 | picocli-spring-boot-starter | 4.7.5 | CLI (integrated with Spring Boot) |
+| JLine | 3.27.x | Interactive shell (line editing, history) |
 | OpenCSV | 5.9 | CSV ingestion |
 
 Java 21. Jackson is provided by Spring Boot.
@@ -127,13 +128,11 @@ HTTP calls via `java.net.http.HttpClient` (no SDK). Two models:
 - Both ingesters skip already-indexed docs (incremental); batch embed in groups of 32 with
   rate-limiting; bulk index to OpenSearch
 
-### CLI (picocli)
+### CLI (picocli + JLine)
 
-Five commands: `query`, `index`, `validate`, `stats`, `shell`. Packaged as a fat JAR with a shell
-wrapper named `mesoql`.
-
-`mesoql shell` starts an interactive REPL — reuses the same `QueryExecutor` across queries to
-avoid reconnection overhead. Type `exit` or `quit` to leave.
+`just mesoql` starts the interactive shell (like `psql`). Subcommands available via
+`just mesoql <cmd>`: `query`, `index`, `validate`, `stats`, `shell`. Shell uses JLine for line
+editing and persistent history (`~/.mesoql_history`).
 
 ## Documentation
 
