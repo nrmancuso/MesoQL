@@ -15,7 +15,7 @@ This handles everything:
 5. Indexes NWS Area Forecast Discussions from the live API
 6. Drops you into the interactive shell
 
-```
+```text
 MesoQL (type \q to quit)
 
 mesoql>

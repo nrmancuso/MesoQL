@@ -7,13 +7,13 @@ documents.
 
 Download CSV files from the NCEI FTP server. Use the `details` file variant:
 
-```
+```text
 ftp://ftp.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/
 ```
 
 File naming pattern:
 
-```
+```text
 StormEvents_details-ftp_v1.0_d2023_c20240117.csv.gz
 ```
 
