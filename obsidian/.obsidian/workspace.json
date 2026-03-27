@@ -185,6 +185,7 @@
   },
   "active": "4252ed0d22205d8d",
   "lastOpenFiles": [
+    "architecture/Infrastructure.md",
     "users-guide/Quick Start.md",
     "users-guide/Deployment.md",
     "users-guide/Data Ingestion.md",
@@ -193,7 +194,6 @@
     "users-guide/Shell.md",
     "users-guide",
     "Home.md",
-    "architecture/Infrastructure.md",
     "data-sources/NWS Area Forecast Discussions.md",
     "data-sources/NOAA Storm Events.md",
     "data-sources",
