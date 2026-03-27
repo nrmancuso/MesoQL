@@ -6,8 +6,14 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
+/**
+ * Utility class for parsing MesoQL query strings into an AST.
+ */
 public class MesoQLParserHelper {
 
+    /**
+     * Parses a MesoQL query string and returns the root {@link QueryAST.Query} node.
+     */
     public static QueryAST.Query parse(String input) {
         final CharStream chars = CharStreams.fromString(input);
         final MesoQLLexer lexer = new MesoQLLexer(chars);

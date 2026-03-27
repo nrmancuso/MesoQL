@@ -18,6 +18,10 @@ tasks.compileJava {
     dependsOn(tasks.generateGrammarSource)
 }
 
+tasks.named<Checkstyle>("checkstyleMain") {
+    source = fileTree("src/main/java")
+}
+
 sourceSets {
     main {
         java {

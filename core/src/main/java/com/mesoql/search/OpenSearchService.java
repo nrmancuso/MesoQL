@@ -22,6 +22,9 @@ import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Spring service that manages OpenSearch index creation, hybrid k-NN search, and bulk indexing.
+ */
 @Service
 public class OpenSearchService {
 
@@ -29,6 +32,9 @@ public class OpenSearchService {
 
     private final org.opensearch.client.RestClient restClient;
 
+    /**
+     * Constructs the service, initialising the OpenSearch REST client from the given config.
+     */
     public OpenSearchService(MesoQLConfig config) {
         this.restClient = org.opensearch.client.RestClient.builder(
             HttpHost.create(config.getOpensearchUrl())
@@ -37,10 +43,16 @@ public class OpenSearchService {
         this.client = new OpenSearchClient(transport);
     }
 
+    /**
+     * Creates the {@code storm_events} index if it does not already exist.
+     */
     public void createStormEventsIndex() throws IOException {
         createIndexFromJson("storm_events", STORM_EVENTS_MAPPING);
     }
 
+    /**
+     * Creates the {@code forecast_discussions} index if it does not already exist.
+     */
     public void createForecastDiscussionsIndex() throws IOException {
         createIndexFromJson("forecast_discussions", FORECAST_DISCUSSIONS_MAPPING);
     }
@@ -53,6 +65,9 @@ public class OpenSearchService {
         restClient.performRequest(req);
     }
 
+    /**
+     * Executes a hybrid k-NN plus boolean-filter search against the specified index.
+     */
     @SuppressWarnings("unchecked")
     public SearchResponse<Map> hybridSearch(
             String index,
@@ -98,18 +113,30 @@ public class OpenSearchService {
         );
     }
 
+    /**
+     * Returns true if a document with the given ID already exists in the specified index.
+     */
     public boolean documentExists(String index, String docId) throws IOException {
         return client.exists(e -> e.index(index).id(docId)).value();
     }
 
+    /**
+     * Submits a bulk indexing request and returns the OpenSearch bulk response.
+     */
     public BulkResponse bulkIndex(List<BulkOperation> operations) throws IOException {
         return client.bulk(BulkRequest.of(b -> b.operations(operations)));
     }
 
+    /**
+     * Returns index-level statistics for the specified index name.
+     */
     public IndicesStatsResponse indexStats(String index) throws IOException {
         return client.indices().stats(s -> s.index(index));
     }
 
+    /**
+     * Returns the underlying {@link OpenSearchClient} for advanced or direct operations.
+     */
     public OpenSearchClient getClient() {
         return client;
     }

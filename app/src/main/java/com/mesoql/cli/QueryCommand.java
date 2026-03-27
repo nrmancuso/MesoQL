@@ -15,6 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
+/**
+ * Executes a MesoQL query from a file or inline string.
+ */
 @Command(name = "query", description = "Execute a MesoQL query.")
 @Component
 public class QueryCommand implements Callable<Integer> {
@@ -30,10 +33,21 @@ public class QueryCommand implements Callable<Integer> {
 
     private final QueryExecutor executor;
 
+    /**
+     * Constructs the query command with its executor dependency.
+     *
+     * @param executor the query executor
+     */
     public QueryCommand(QueryExecutor executor) {
         this.executor = executor;
     }
 
+    /**
+     * Parses and executes the requested query.
+     *
+     * @return exit code `0` on success
+     * @throws Exception if the query cannot be read or executed
+     */
     @Override
     public Integer call() throws Exception {
         final String queryText = resolveQuery();
@@ -43,6 +57,12 @@ public class QueryCommand implements Callable<Integer> {
         return 0;
     }
 
+    /**
+     * Resolves the query text from either an inline argument or a file.
+     *
+     * @return the query text
+     * @throws Exception if the query file cannot be read
+     */
     private String resolveQuery() throws Exception {
         if (inlineQuery != null) return inlineQuery;
         if (queryFile != null) return Files.readString(queryFile);

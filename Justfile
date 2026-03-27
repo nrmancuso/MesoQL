@@ -20,6 +20,10 @@ build:
 test:
     ./gradlew test
 
+# Run Checkstyle on main sources
+checkstyle:
+    ./gradlew checkstyleMain
+
 # Build executable fat JAR
 jar:
     ./gradlew bootJar

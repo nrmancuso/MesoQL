@@ -3,6 +3,9 @@ package com.mesoql.cli;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 
+/**
+ * Root Picocli command that exposes the MesoQL subcommands.
+ */
 @Command(
     name = "mesoql",
     mixinStandardHelpOptions = true,
@@ -21,10 +24,18 @@ public class MesoQLCLI implements Runnable {
 
     private final ShellCommand shell;
 
+    /**
+     * Constructs the root CLI command.
+     *
+     * @param shell the interactive shell command
+     */
     public MesoQLCLI(ShellCommand shell) {
         this.shell = shell;
     }
 
+    /**
+     * Runs the default shell command when no subcommand is provided.
+     */
     @Override
     public void run() {
         try {

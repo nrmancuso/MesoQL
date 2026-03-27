@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Validates a parsed MesoQL query against static per-source field schemas before execution.
+ */
 @Component
 public class QueryPlanner {
 
@@ -36,6 +39,9 @@ public class QueryPlanner {
         "DC", "PR", "VI", "GU", "AS", "MP"
     );
 
+    /**
+     * Validates the query's filters and output clauses, throwing on any schema or logic violation.
+     */
     public void validate(QueryAST.Query query) {
         final String source = query.search().source();
         final Map<String, FieldSchema> schema = schemaFor(source);

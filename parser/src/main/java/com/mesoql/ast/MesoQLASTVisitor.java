@@ -5,6 +5,10 @@ import com.mesoql.parser.MesoQLParser;
 
 import java.util.List;
 
+/**
+ * ANTLR visitor that converts a MesoQL parse tree into a
+ * {@link QueryAST} node hierarchy.
+ */
 public class MesoQLASTVisitor extends MesoQLBaseVisitor<QueryAST.Node> {
 
     @Override

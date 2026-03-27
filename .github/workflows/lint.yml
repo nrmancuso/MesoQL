@@ -30,3 +30,14 @@ jobs:
       - uses: streetsidesoftware/cspell-action@v6.11.1
         with:
           files: "**/*.md **/*.g4 **/*.java"
+
+  checkstyle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+      - uses: actions/setup-java@v4.7.0
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4.3.0
+      - run: ./gradlew checkstyleMain

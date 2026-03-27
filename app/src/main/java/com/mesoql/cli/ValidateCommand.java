@@ -13,6 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
+/**
+ * Validates a MesoQL query without executing it.
+ */
 @Command(name = "validate", description = "Validate a MesoQL query without executing it.")
 @Component
 public class ValidateCommand implements Callable<Integer> {
@@ -22,10 +25,21 @@ public class ValidateCommand implements Callable<Integer> {
 
     private final QueryPlanner planner;
 
+    /**
+     * Constructs the validate command with its planner dependency.
+     *
+     * @param planner the query planner
+     */
     public ValidateCommand(QueryPlanner planner) {
         this.planner = planner;
     }
 
+    /**
+     * Parses and validates the supplied query file.
+     *
+     * @return exit code `0` when validation succeeds, `1` otherwise
+     * @throws Exception if the query file cannot be read
+     */
     @Override
     public Integer call() throws Exception {
         final String queryText = Files.readString(queryFile);

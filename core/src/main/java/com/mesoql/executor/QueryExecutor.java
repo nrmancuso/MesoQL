@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Executes a validated MesoQL query against OpenSearch and Ollama.
+ */
 @Service
 public class QueryExecutor {
 
@@ -21,12 +24,18 @@ public class QueryExecutor {
     private final OllamaClient ollamaClient;
     private final QueryPlanner planner;
 
+    /**
+     * Constructs the executor with its required search, LLM, and planning collaborators.
+     */
     public QueryExecutor(OpenSearchService searchService, OllamaClient ollamaClient, QueryPlanner planner) {
         this.searchService = searchService;
         this.ollamaClient = ollamaClient;
         this.planner = planner;
     }
 
+    /**
+     * Validates, plans, and executes the given query, returning the combined result.
+     */
     @SuppressWarnings("unchecked")
     public QueryResult execute(QueryAST.Query query) {
         planner.validate(query);
@@ -84,7 +93,8 @@ public class QueryExecutor {
                     final String prompt = PromptBuilder.clusterPrompt(semanticText, narratives);
                     clusters = ollamaClient.generate(prompt);
                 }
-                case QueryAST.LimitClause ignored -> {} // already handled
+                case QueryAST.LimitClause ignored -> {}
+
             }
         }
 
