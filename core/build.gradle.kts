@@ -6,4 +6,5 @@ dependencies {
     implementation(libs.httpcore5)
     implementation(libs.jackson.databind)
     testImplementation(libs.spring.boot.starter.test)
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
