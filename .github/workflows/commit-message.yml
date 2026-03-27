@@ -17,7 +17,7 @@ jobs:
           BASE="${{ github.event.pull_request.base.sha }}"
           HEAD="${{ github.event.pull_request.head.sha }}"
 
-          PATTERN='^(Issue #[0-9]+|minor|doc|infra|ci): .+'
+          PATTERN='^(Issue #[0-9]+|minor|doc|dependency|infra|ci): .+'
           MAX_LENGTH=72
 
           FAILED=0
@@ -44,7 +44,7 @@ jobs:
           if [ "$FAILED" -eq 1 ]; then
             echo ""
             echo "Each commit message must:"
-            echo "  - Start with one of: Issue #123: / minor: / doc: / infra: / ci:"
+            echo "  - Start with one of: Issue #123: / minor: / doc: / dependency: / infra: / ci:"
             echo "  - Be at most $MAX_LENGTH characters"
             exit 1
           fi
