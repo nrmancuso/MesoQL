@@ -10,7 +10,7 @@ opensearch-rest-client = "2.11.0"
 picocli-spring-boot-starter = "4.7.5"
 spotbugs-plugin = "6.2.4"
 spotbugs-tool = "4.9.3"
-spring-boot = "3.4.4"
+spring-boot = "4.0.5"
 
 [libraries]
 antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
