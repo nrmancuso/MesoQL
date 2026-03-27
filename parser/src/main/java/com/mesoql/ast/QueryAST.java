@@ -16,7 +16,14 @@ public class QueryAST {
     /**
      * Top-level query node combining search, where, and output clauses.
      */
-    public record Query(SearchClause search, WhereClause where, List<OutputClause> outputs) implements Node {}
+    public record Query(SearchClause search, WhereClause where, List<OutputClause> outputs) implements Node {
+        /**
+         * Creates a query node with an immutable output clause list.
+         */
+        public Query {
+            outputs = outputs == null ? List.of() : List.copyOf(outputs);
+        }
+    }
     /**
      * Identifies the data source to query.
      */
@@ -24,7 +31,14 @@ public class QueryAST {
     /**
      * Combines the mandatory semantic clause with optional structured filters.
      */
-    public record WhereClause(SemanticClause semantic, List<Filter> filters) implements Node {}
+    public record WhereClause(SemanticClause semantic, List<Filter> filters) implements Node {
+        /**
+         * Creates a where clause with an immutable filter list.
+         */
+        public WhereClause {
+            filters = filters == null ? List.of() : List.copyOf(filters);
+        }
+    }
     /**
      * Holds the natural-language text used for vector search.
      */
@@ -37,7 +51,14 @@ public class QueryAST {
     /**
      * Filter that checks whether a field's value is in a list of strings.
      */
-    public record InFilter(String field, List<String> values) implements Filter {}
+    public record InFilter(String field, List<String> values) implements Filter {
+        /**
+         * Creates an IN filter with immutable comparison values.
+         */
+        public InFilter {
+            values = values == null ? List.of() : List.copyOf(values);
+        }
+    }
     /**
      * Filter that checks whether a numeric field falls within a range.
      */

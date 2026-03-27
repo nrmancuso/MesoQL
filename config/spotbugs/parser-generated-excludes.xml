@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <Match>
+        <Class name="~com\\.mesoql\\.parser\\.MesoQLLexer(\\$.*)?"/>
+    </Match>
+    <Match>
+        <Class name="~com\\.mesoql\\.parser\\.MesoQLParser(\\$.*)?"/>
+    </Match>
+    <Match>
+        <Class name="~com\\.mesoql\\.parser\\.MesoQLBaseVisitor(\\$.*)?"/>
+    </Match>
+    <Match>
+        <Class name="~com\\.mesoql\\.parser\\.MesoQLVisitor(\\$.*)?"/>
+    </Match>
+</FindBugsFilter>

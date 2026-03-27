@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class ResultPrinter {
      * Prints the result to standard output.
      */
     public void print(QueryResult result) {
-        print(result, new PrintWriter(System.out, true));
+        print(result, new PrintWriter(System.out, true, StandardCharsets.UTF_8));
     }
 
     /**
