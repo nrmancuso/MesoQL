@@ -1,5 +1,5 @@
 [versions]
-antlr = "4.13.1"
+antlr = "4.13.2"
 checkstyle-tool = "13.3.0"
 httpcore5 = "5.2.4"
 jline = "3.27.1"
