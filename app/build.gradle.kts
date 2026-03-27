@@ -1,16 +1,16 @@
 plugins {
-    id("org.springframework.boot") version "3.4.4"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.spring.boot)
 }
 
 dependencies {
     implementation(project(":parser"))
     implementation(project(":core"))
     implementation(project(":ingestion"))
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("info.picocli:picocli-spring-boot-starter:4.7.5")
-    implementation("org.opensearch.client:opensearch-java:2.6.0")
-    implementation("org.jline:jline:3.27.1")
+    implementation(platform(libs.spring.boot.bom))
+    implementation(libs.spring.boot.starter)
+    implementation(libs.picocli.spring.boot.starter)
+    implementation(libs.opensearch.java)
+    implementation(libs.jline)
 }
 
 configurations {

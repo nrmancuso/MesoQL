@@ -7,7 +7,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AFDIngesterTest {
-
     @Test
     void chunkShortText() {
         final List<String> chunks = AFDIngester.chunk("hello world", 512, 64);

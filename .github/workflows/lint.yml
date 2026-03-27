@@ -40,7 +40,13 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4.3.0
-      - run: ./gradlew checkstyleMain
+      - run: ./gradlew checkstyleMain checkstyleTest
+      - name: Upload Checkstyle reports
+        if: failure()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: checkstyle-report
+          path: "**/build/reports/checkstyle/*.html"
 
   spotbugs:
     runs-on: ubuntu-latest
@@ -51,10 +57,10 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4.3.0
-      - run: ./gradlew spotbugsMain
+      - run: ./gradlew spotbugsMain spotbugsTest
       - name: Upload SpotBugs report
         if: failure()
         uses: actions/upload-artifact@v4.6.2
         with:
           name: spotbugs-report
-          path: "**/build/reports/spotbugs/**"
+          path: "**/build/reports/spotbugs/*.*"
