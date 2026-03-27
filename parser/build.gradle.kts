@@ -7,9 +7,10 @@ plugins {
 }
 
 dependencies {
-    antlr("org.antlr:antlr4:4.13.1")
-    api("org.antlr:antlr4-runtime:4.13.1")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
+    antlr(libs.antlr)
+    api(libs.antlr.runtime)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
 }
 
 tasks.generateGrammarSource {

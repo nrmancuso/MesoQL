@@ -8,7 +8,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MesoQLParserHelperTest {
-
     @Test
     void basicQuery() {
         final QueryAST.Query q = MesoQLParserHelper.parse(
