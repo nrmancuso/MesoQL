@@ -19,7 +19,6 @@ Every commit message subject line must:
   - `Issue #123:` — work tracked by an issue
   - `minor:` — small change not worth an issue
   - `doc:` — documentation-only change
-  - `dependency:` — dependency or version update
   - `infra:` — infrastructure or tooling change
   - `ci:` — CI/CD change
 - Be at most **72 characters** (enforced by the `commit-message` CI workflow)
