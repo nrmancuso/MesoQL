@@ -7,3 +7,5 @@ parser/src/generated/
 !gradle/wrapper/gradle-wrapper.jar
 gradle-local.properties
 data/*.csv
+obsidian/.obsidian/workspace.json
+obsidian/.obsidian/workspace-mobile.json
