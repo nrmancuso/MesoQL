@@ -29,6 +29,22 @@ services:
       timeout: 5s
       retries: 12
 
+  forecast-discussion-fixtures:
+    profiles: ["integration"]
+    image: python:3.12-alpine
+    volumes:
+      - ./integration-tests/scripts/serve-forecast-discussion-fixtures.py:/srv/serve.py:ro
+      - ./integration-tests/fixtures/forecast-discussion-products.json:/fixtures/forecast-discussion-products.json:ro
+    ports:
+      - "${FORECAST_DISCUSSION_FIXTURE_PORT:-18080}:18080"
+    command: ["python", "/srv/serve.py", "18080", "/fixtures/forecast-discussion-products.json"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:18080/products')"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
 volumes:
   opensearch-data:
   ollama-data:

@@ -29,14 +29,14 @@ class FixtureHandler(BaseHTTPRequestHandler):
 
 def main() -> int:
     if len(sys.argv) != 3:
-        print("usage: serve-afd-fixtures.py <port> <json-file>", file=sys.stderr)
+        print("usage: serve-forecast-discussion-fixtures.py <port> <json-file>", file=sys.stderr)
         return 2
 
     port = int(sys.argv[1])
     fixture_path = Path(sys.argv[2])
     FixtureHandler.payload = json.dumps(json.loads(fixture_path.read_text())).encode("utf-8")
 
-    server = ThreadingHTTPServer(("127.0.0.1", port), FixtureHandler)
+    server = ThreadingHTTPServer(("", port), FixtureHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

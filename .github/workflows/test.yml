@@ -58,7 +58,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y expect
 
       - name: Run integration tests
-        run: bash integration-tests/scripts/run-integration-tests.sh
+        run: |
+          bash integration-tests/scripts/start-stack.sh
+          ./gradlew :integration-tests:test
+        env:
+          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-integration-home
 
       - name: Upload integration test report
         if: failure()
@@ -71,8 +75,9 @@ jobs:
         if: failure()
         run: |
           mkdir -p /tmp/mesoql-docker-logs
-          docker compose logs opensearch > /tmp/mesoql-docker-logs/opensearch.log
-          docker compose logs ollama > /tmp/mesoql-docker-logs/ollama.log
+          docker compose --profile integration logs opensearch > /tmp/mesoql-docker-logs/opensearch.log
+          docker compose --profile integration logs ollama > /tmp/mesoql-docker-logs/ollama.log
+          docker compose --profile integration logs forecast-discussion-fixtures > /tmp/mesoql-docker-logs/forecast-discussion-fixtures.log
 
       - name: Upload docker logs
         if: failure()
