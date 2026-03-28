@@ -1,7 +1,10 @@
 package com.mesoql.integration;
 
 import com.mesoql.integration.support.AppServerExtension;
+import com.mesoql.integration.support.GraphQLClient;
 import com.mesoql.integration.support.IntegrationEnvironment;
+import com.mesoql.integration.support.TestHelper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -12,7 +15,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,10 +28,9 @@ class AdminIndexTest {
 
     private static final GraphQLClient CLIENT = new GraphQLClient();
     private static final HttpClient HTTP = HttpClient.newHttpClient();
-    private static final Duration INGEST_TIMEOUT = Duration.ofMinutes(3);
-    private static final long POLL_INTERVAL_MS = 2000L;
 
     @Test
+    @DisplayName("Index job lifecycle: submit, poll, and verify completion")
     void testIndexJobLifecycle() throws IOException, InterruptedException {
         final Path fixture = IntegrationEnvironment.repoRoot()
             .resolve("integration-tests/fixtures/storm-events.csv");
@@ -39,18 +40,23 @@ class AdminIndexTest {
 
         assertTrue(postBody.contains("\"jobId\""),
             "Response should contain jobId: " + postBody);
-        assertTrue(postBody.contains("\"RUNNING\"") || postBody.contains("\"status\""),
-            "Response should contain status: " + postBody);
+        assertTrue(postBody.contains("\"status\""),
+            "Response should contain status field: " + postBody);
+        assertTrue(postBody.contains("\"data\"") || postBody.contains("RUNNING"),
+            "Response should show valid status: " + postBody);
 
         final String jobId = GraphQLClient.extractJobId(postBody);
         assertNotNull(jobId, "Job ID should not be null");
 
-        final String finalStatus = pollUntilTerminal(jobId);
+        final String finalStatus = TestHelper.pollUntilTerminal(jobId);
         assertTrue(finalStatus.contains("\"DONE\""),
             "Expected DONE status but got: " + finalStatus);
+        assertTrue(finalStatus.contains("\"jobId\""),
+            "Final response should contain jobId: " + finalStatus);
     }
 
     @Test
+    @DisplayName("Query unknown job ID returns 404 with proper response structure")
     void testUnknownJobId() throws IOException, InterruptedException {
         final String unknownId = "00000000-0000-0000-0000-000000000000";
         final HttpRequest request = HttpRequest.newBuilder()
@@ -63,24 +69,8 @@ class AdminIndexTest {
 
         assertEquals(404, response.statusCode(),
             "Expected 404 for unknown job ID but got " + response.statusCode());
-    }
-
-    private static String pollUntilTerminal(String jobId) throws IOException, InterruptedException {
-        final Instant deadline = Instant.now().plus(INGEST_TIMEOUT);
-        while (Instant.now().isBefore(deadline)) {
-            final HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(IntegrationEnvironment.adminIndexEndpoint() + "/" + jobId))
-                .timeout(Duration.ofSeconds(10))
-                .GET()
-                .build();
-            final HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
-            final String body = resp.body();
-
-            if (body.contains("\"DONE\"") || body.contains("\"FAILED\"")) {
-                return body;
-            }
-            Thread.sleep(POLL_INTERVAL_MS);
-        }
-        throw new IllegalStateException("Job " + jobId + " did not reach terminal state within timeout");
+        final String body = response.body();
+        assertTrue(body != null && !body.isEmpty(),
+            "Response body should not be empty: " + body);
     }
 }

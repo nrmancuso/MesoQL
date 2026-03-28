@@ -9,6 +9,23 @@ repository.
 - **`final` local variables**: All local variables must be declared `final`.
 - **No `final` on parameters**: Method parameters must not use the `final` keyword.
 
+## Testing
+
+- **No `@Order` annotations**: Tests should not depend on execution order. Use `@BeforeAll` for shared
+  setup (e.g., seeding data) and keep individual tests independent.
+- **`@DisplayName` on all tests**: Every test must have a `@DisplayName` annotation with a clear,
+  human-readable description of what it tests (e.g., `@DisplayName("Search storm events by
+  semantic query and verify response structure")`).
+- **Assert entire response body**: Don't just check for the presence of a field or lack of errors.
+  Verify the response contains expected structures and data: `assertTrue(response.contains("\"data\""))`,
+  `assertTrue(response.contains("\"search\""))`, etc.
+- **Extract static test helpers**: Reusable test logic (e.g., polling, uploading files, seeding
+  data) should be moved to `com.mesoql.integration.support.TestHelper`.
+- **Parallel test execution**: Both test classes and test methods within classes run in parallel
+  (configured via `junit-platform.properties`). `AppServerExtension` uses locking to ensure only
+  one test class starts the server; others reuse it. Data is seeded once via `TestHelper.ensureDataSeeded()`
+  with double-checked locking. Only the test class that started the server destroys it in `afterAll()`.
+
 ## Commits
 
 Do not add `Co-Authored-By` trailers to commit messages.
