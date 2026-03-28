@@ -6,6 +6,7 @@ Replace the ANTLR4-parsed MesoQL DSL and picocli CLI with a Spring GraphQL HTTP 
 The semantic search, filter, and output-clause semantics are preserved; only the interface changes.
 
 **Decisions locked in:**
+
 - CLI dropped entirely (no picocli, JLine, shell, validate, query commands)
 - Unified `search(source, input)` query root + union return type (`StormEventHit | ForecastDiscussionHit`)
 - GraphiQL playground enabled at `/graphiql`
@@ -99,28 +100,30 @@ type StormEventHit {
   eventType:      String
   beginDate:      String
   fatalities:     Int
-  damageProperty: Long          # custom scalar via graphql-java-extended-scalars
+  damageProperty: Long
   narrative:      String
-  explanation:    String        # populated only when explain: true
+  explanation:    String
 }
 
 type ForecastDiscussionHit {
-  discussionId: String
-  office:       String
-  region:       String
-  season:       String
-  issuanceTime: String
-  text:         String
-  explanation:  String          # populated only when explain: true
+  discussionId:   String
+  office:         String
+  region:         String
+  season:         String
+  issuanceTime:   String
+  text:           String
+  explanation:    String
 }
 
 union SearchHit = StormEventHit | ForecastDiscussionHit
 
 type SearchResponse {
   hits:      [SearchHit!]!
-  synthesis: String             # populated only when synthesize is set
-  clusters:  String             # populated only when clusterByTheme: true
+  synthesis: String
+  clusters:  String
 }
+
+scalar Long
 
 type Query {
   search(source: Source!, input: SearchInput!): SearchResponse!
@@ -143,7 +146,7 @@ All open questions are resolved:
 
 ### Ingestion job tracking design
 
-```
+```text
 POST /admin/index/storm-events          (multipart: file=<csv>)
 POST /admin/index/forecast-discussions  (query param: since=yyyy-MM-dd, optional)
 
@@ -184,10 +187,12 @@ of shell. PR #22's shell-based tests are superseded by this work and should not 
 ## What Gets Removed
 
 ### Entire module deleted
+
 - `parser/` — ANTLR4 grammar, generated lexer/parser, `QueryAST`, `MesoQLASTVisitor`,
   `MesoQLParserHelper`, `MesoQLSyntaxException`, `ThrowingErrorListener`
 
 ### Files deleted from `core/`
+
 | File | Reason |
 |---|---|
 | `planner/QueryPlanner.java` | Replaced by `InputValidator` in resolver layer |
@@ -198,6 +203,7 @@ of shell. PR #22's shell-based tests are superseded by this work and should not 
 | `test/…/planner/QueryPlannerTest.java` | Replaced by `InputValidatorTest` |
 
 ### Files deleted from `app/`
+
 | File | Reason |
 |---|---|
 | `cli/MesoQLCLI.java` | CLI dropped |
@@ -209,12 +215,14 @@ of shell. PR #22's shell-based tests are superseded by this work and should not 
 | `MesoQLApplication.java` | Replaced (no longer a `CommandLineRunner`) |
 
 ### Docs deleted
+
 | File | Reason |
 |---|---|
 | `docs/grammar.md` | Grammar removed |
 | `docs/cli.md` | CLI removed |
 
 ### Obsidian notes deleted
+
 | File | Reason |
 |---|---|
 | `obsidian/components/Grammar.md` | Grammar removed |
@@ -227,6 +235,7 @@ of shell. PR #22's shell-based tests are superseded by this work and should not 
 ## What Gets Added
 
 ### New types in `core/src/main/java/com/mesoql/search/`
+
 | File | Purpose |
 |---|---|
 | `SearchRequest.java` | Replaces `QueryAST.Query`; plain Java record consumed by `QueryExecutor` |
@@ -236,6 +245,7 @@ of shell. PR #22's shell-based tests are superseded by this work and should not 
 | `test/…/search/InputValidatorTest.java` | Unit tests for all validation rules |
 
 **`SearchRequest` shape:**
+
 ```java
 public record SearchRequest(
     String source,
@@ -249,6 +259,7 @@ public record SearchRequest(
 ```
 
 ### New files in `app/`
+
 | File | Purpose |
 |---|---|
 | `api/SearchResolver.java` | `@QueryMapping` resolver; maps GraphQL input → `SearchRequest` → `QueryExecutor` |
@@ -260,18 +271,22 @@ public record SearchRequest(
 | `resources/graphql/schema.graphqls` | GraphQL SDL (see above) |
 
 ### New docs
+
 | File | Purpose |
 |---|---|
 | `docs/graphql.md` | Schema reference, example queries, GraphiQL usage |
 | `docs/api.md` | HTTP API reference: `/graphql`, `/graphiql`, `/admin/*`; running the server |
 
 ### New obsidian notes
+
 | File | Purpose |
 |---|---|
 | `obsidian/components/GraphQL.md` | Schema decisions, resolver design, spring-graphql config |
 
 ### Integration tests
+
 Add `integration-tests` to `settings.gradle.kts` and create (following PR #22's patterns):
+
 | File | Purpose |
 |---|---|
 | `integration-tests/build.gradle.kts` | JUnit 5; depends on `:app:bootJar`; opt-in only |
@@ -290,10 +305,12 @@ Add `integration-tests` to `settings.gradle.kts` and create (following PR #22's 
 ## What Gets Changed
 
 ### `settings.gradle.kts`
+
 - Remove `"parser"` from `include()`
 - Add `"integration-tests"` to `include()`
 
 ### `gradle/libs.versions.toml`
+
 - **Remove:** `antlr`, `antlr-runtime`, `picocli-spring-boot-starter`, `jline`
   (and their `[libraries]` and `[plugins]` entries)
 - **Add:** `spring-graphql-starter` entry pointing to
@@ -301,21 +318,25 @@ Add `integration-tests` to `settings.gradle.kts` and create (following PR #22's 
 - **Add:** `graphql-java-extended-scalars` (`com.graphql-java:graphql-java-extended-scalars`)
 
 ### `core/build.gradle.kts`
+
 - Remove `implementation(project(":parser"))` dependency
 - `QueryExecutor` no longer imports anything from the `parser` module
 
 ### `core/src/main/java/com/mesoql/executor/QueryExecutor.java`
+
 - Change signature: `execute(QueryAST.Query)` → `execute(SearchRequest)`
 - Remove `QueryPlanner` field and constructor injection
 - Input validation is no longer called here; it lives in `SearchResolver` via `InputValidator`
 - Internal logic unchanged (OpenSearch hybrid search + Ollama calls)
 
 ### `app/build.gradle.kts`
+
 - **Remove:** `project(":parser")`, `picocli-spring-boot-starter`, `jline`
 - **Add:** `spring-boot-starter-graphql` (brings in Spring Web + spring-graphql)
 - Keep: `project(":core")`, `project(":ingestion")`
 
 ### `app/src/main/resources/application.yml`
+
 ```yaml
 spring:
   graphql:
@@ -338,32 +359,35 @@ mesoql:
 ```
 
 ### `Justfile`
+
 - **Remove:** `mesoql *args:`, `index-storm file:`, `index-afd:`
 - **Add:**
-  ```just
-  # Start the MesoQL HTTP server (GraphQL at :8080/graphql)
-  serve:
-      java -jar {{jar}}
 
-  # Index a NOAA Storm Events CSV via admin endpoint (returns job ID)
-  index-storm file:
-      curl -X POST "http://localhost:8080/admin/index/storm-events" \
-           -F "file=@{{file}}"
+```just
+# Start the MesoQL HTTP server (GraphQL at :8080/graphql)
+serve:
+    java -jar {{jar}}
 
-  # Poll ingestion job status
-  index-status job_id:
-      curl -s "http://localhost:8080/admin/index/{{job_id}}" | jq .
+# Index a NOAA Storm Events CSV via admin endpoint (returns job ID)
+index-storm file:
+    curl -X POST "http://localhost:8080/admin/index/storm-events" \
+         -F "file=@{{file}}"
 
-  # Index NWS AFDs via admin endpoint (returns job ID)
-  index-afd:
-      curl -X POST "http://localhost:8080/admin/index/forecast-discussions"
+# Poll ingestion job status
+index-status job_id:
+    curl -s "http://localhost:8080/admin/index/{{job_id}}" | jq .
 
-  # Show index stats via admin endpoint
-  stats:
-      curl -s "http://localhost:8080/admin/stats" | jq .
-  ```
+# Index NWS AFDs via admin endpoint (returns job ID)
+index-afd:
+    curl -X POST "http://localhost:8080/admin/index/forecast-discussions"
+
+# Show index stats via admin endpoint
+stats:
+    curl -s "http://localhost:8080/admin/stats" | jq .
+```
 
 ### `CLAUDE.md`
+
 - Remove grammar references from the architecture section
 - Update build commands (replace `just mesoql` with `just serve`)
 - Remove `parser` from key dependencies table
@@ -372,6 +396,7 @@ mesoql:
 - Add `docs/graphql.md` and `docs/api.md`
 
 ### Obsidian notes updated
+
 | Note | Change |
 |---|---|
 | `architecture/Overview.md` | Remove Grammar node; replace CLI node with "HTTP API (spring-graphql)" |
@@ -386,6 +411,7 @@ mesoql:
 ## Implementation Phases
 
 ### Phase 1 — Strip out the DSL and CLI
+
 1. Delete `parser/` directory
 2. Remove `"parser"` from `settings.gradle.kts`
 3. Delete `core/src/main/java/com/mesoql/planner/` package
@@ -398,6 +424,7 @@ mesoql:
 10. Verify `./gradlew compileJava` fails gracefully (QueryExecutor still references old types)
 
 ### Phase 2 — Define new input types and refactor `QueryExecutor`
+
 1. Add `SearchRequest.java` and `FilterInput.java` (sealed interface + subtypes) to `core`
 2. Add `ValidationException.java` to `core/src/main/java/com/mesoql/search/`
 3. Add `InputValidator.java` — field schemas + all validation rules from `QueryPlanner`
@@ -406,6 +433,7 @@ mesoql:
 6. Verify `./gradlew :core:test` passes
 
 ### Phase 3 — Add GraphQL API to `app`
+
 1. Add `spring-boot-starter-graphql` (and optionally `graphql-java-extended-scalars`) to
    `libs.versions.toml` and `app/build.gradle.kts`
 2. Write `app/src/main/resources/graphql/schema.graphqls`
@@ -418,6 +446,7 @@ mesoql:
 6. Verify `./gradlew :app:bootJar` and `just serve` starts at `:8080/graphql`
 
 ### Phase 4 — Admin HTTP endpoints for ingestion
+
 1. Write `app/src/main/java/com/mesoql/admin/IngestionJob.java` — job state record
 2. Write `app/src/main/java/com/mesoql/admin/IngestionJobStore.java` — `@Component` with
    `ConcurrentHashMap<UUID, IngestionJob>`; methods: `create()`, `markDone(id, docsIndexed)`,
@@ -432,6 +461,7 @@ mesoql:
 5. Update `Justfile` with new `just serve`, `just index-storm`, `just index-afd`, `just stats` targets
 
 ### Phase 5 — Integration tests
+
 Modelled on PR #22 (Issue #4) adapted for HTTP. Read PR #22's files for patterns to follow.
 
 1. Add `"integration-tests"` to `settings.gradle.kts`
@@ -460,6 +490,7 @@ Modelled on PR #22 (Issue #4) adapted for HTTP. Read PR #22's files for patterns
 7. Verify `./gradlew :integration-tests:test` passes with the stack running
 
 ### Phase 6 — Docs and obsidian cleanup
+
 1. Delete `docs/grammar.md`, `docs/cli.md`
 2. Write `docs/graphql.md` — schema reference, example queries (curl + GraphiQL), field tables
 3. Write `docs/api.md` — HTTP API reference, running the server, admin endpoint reference

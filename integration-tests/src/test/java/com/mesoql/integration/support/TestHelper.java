@@ -67,7 +67,7 @@ public final class TestHelper {
         final GraphQLClient client = new GraphQLClient(baseUrl + "/graphql");
         final String responseBody = client.uploadFile(
             baseUrl + "/admin/index/storm-events", fixture);
-        pollUntilDone(baseUrl, GraphQLClient.extractJobId(responseBody));
+        pollUntilDone(baseUrl, GraphQLUtil.extractJobId(responseBody));
     }
 
     /**
@@ -90,7 +90,7 @@ public final class TestHelper {
                     + ": " + response.body());
         }
 
-        pollUntilDone(baseUrl, GraphQLClient.extractJobId(response.body()));
+        pollUntilDone(baseUrl, GraphQLUtil.extractJobId(response.body()));
     }
 
     /**

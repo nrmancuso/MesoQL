@@ -31,6 +31,7 @@ just serve          # starts the MesoQL HTTP server at :8080
 ```
 
 The server exposes:
+
 - GraphQL endpoint: `POST /graphql`
 - GraphiQL playground: `http://localhost:8080/graphiql`
 - Admin endpoints: `POST /admin/index/*`, `GET /admin/stats`

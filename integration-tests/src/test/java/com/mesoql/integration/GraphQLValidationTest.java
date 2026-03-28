@@ -5,12 +5,12 @@ import com.mesoql.integration.support.GraphQLClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests that the GraphQL API rejects invalid inputs with descriptive error messages.
@@ -34,7 +34,7 @@ class GraphQLValidationTest {
 
     @Test
     @DisplayName("Reject unknown field in filter with error response")
-    void testUnknownField() throws IOException, InterruptedException {
+    void testUnknownField() throws Exception {
         final String query = """
             {
               search(source: STORM_EVENTS, input: {
@@ -45,16 +45,18 @@ class GraphQLValidationTest {
             """;
 
         final String response = client.execute(query);
+        final String expected = """
+            {
+              "errors": [{"message": "Unknown field 'unknown_field' for source 'storm_events'"}]
+            }
+            """;
 
-        assertTrue(client.hasErrors(response),
-            "Expected validation error for unknown field but got: " + response);
-        assertTrue(response.contains("\"errors\""),
-            "Response should contain errors array: " + response);
+        JSONAssert.assertEquals(expected, response, JSONCompareMode.NON_EXTENSIBLE);
     }
 
     @Test
     @DisplayName("Reject IN filter on numeric field with error response")
-    void testInOnNumericField() throws IOException, InterruptedException {
+    void testInOnNumericField() throws Exception {
         final String query = """
             {
               search(source: STORM_EVENTS, input: {
@@ -65,16 +67,18 @@ class GraphQLValidationTest {
             """;
 
         final String response = client.execute(query);
+        final String expected = """
+            {
+              "errors": [{"message": "IN filter only applies to keyword fields, but 'fatalities' is INTEGER"}]
+            }
+            """;
 
-        assertTrue(client.hasErrors(response),
-            "Expected validation error for IN on numeric field but got: " + response);
-        assertTrue(response.contains("\"errors\""),
-            "Response should contain errors array: " + response);
+        JSONAssert.assertEquals(expected, response, JSONCompareMode.NON_EXTENSIBLE);
     }
 
     @Test
     @DisplayName("Reject BETWEEN filter on keyword field with error response")
-    void testBetweenOnKeywordField() throws IOException, InterruptedException {
+    void testBetweenOnKeywordField() throws Exception {
         final String query = """
             {
               search(source: STORM_EVENTS, input: {
@@ -85,16 +89,18 @@ class GraphQLValidationTest {
             """;
 
         final String response = client.execute(query);
+        final String expected = """
+            {
+              "errors": [{"message": "BETWEEN filter does not apply to keyword fields, but 'state' is KEYWORD"}]
+            }
+            """;
 
-        assertTrue(client.hasErrors(response),
-            "Expected validation error for BETWEEN on keyword field but got: " + response);
-        assertTrue(response.contains("\"errors\""),
-            "Response should contain errors array: " + response);
+        JSONAssert.assertEquals(expected, response, JSONCompareMode.NON_EXTENSIBLE);
     }
 
     @Test
     @DisplayName("Reject mutually exclusive synthesize and clusterByTheme with error response")
-    void testMutualExclusion() throws IOException, InterruptedException {
+    void testMutualExclusion() throws Exception {
         final String query = """
             {
               search(source: STORM_EVENTS, input: {
@@ -106,16 +112,18 @@ class GraphQLValidationTest {
             """;
 
         final String response = client.execute(query);
+        final String expected = """
+            {
+              "errors": [{"message": "synthesize and clusterByTheme cannot both be set"}]
+            }
+            """;
 
-        assertTrue(client.hasErrors(response),
-            "Expected error for mutually exclusive synthesize + clusterByTheme but got: " + response);
-        assertTrue(response.contains("\"errors\""),
-            "Response should contain errors array: " + response);
+        JSONAssert.assertEquals(expected, response, JSONCompareMode.NON_EXTENSIBLE);
     }
 
     @Test
     @DisplayName("Reject unknown GraphQL source enum with schema error")
-    void testUnknownSource() throws IOException, InterruptedException {
+    void testUnknownSource() throws Exception {
         final String query = """
             {
               search(source: UNKNOWN_SOURCE, input: { semantic: "tornado" }) {
@@ -125,10 +133,12 @@ class GraphQLValidationTest {
             """;
 
         final String response = client.execute(query);
+        final String expected = """
+            {
+              "errors": [{}]
+            }
+            """;
 
-        assertTrue(client.hasErrors(response),
-            "Expected GraphQL schema error for unknown source but got: " + response);
-        assertTrue(response.contains("\"errors\""),
-            "Response should contain errors array: " + response);
+        JSONAssert.assertEquals(expected, response, JSONCompareMode.NON_EXTENSIBLE);
     }
 }

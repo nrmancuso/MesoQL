@@ -2,11 +2,14 @@ package com.mesoql.integration;
 
 import com.mesoql.MesoQLApplication;
 import com.mesoql.integration.support.GraphQLClient;
+import com.mesoql.integration.support.GraphQLUtil;
 import com.mesoql.integration.support.IntegrationEnvironment;
 import com.mesoql.integration.support.TestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
@@ -19,8 +22,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the admin ingestion job lifecycle endpoints.
@@ -48,27 +49,21 @@ class AdminIndexTest {
 
     @Test
     @DisplayName("Index job lifecycle: submit, poll, and verify completion")
-    void testIndexJobLifecycle() throws IOException, InterruptedException {
+    void testIndexJobLifecycle() throws Exception {
         final Path fixture = IntegrationEnvironment.repoRoot()
             .resolve("integration-tests/fixtures/storm-events.csv");
 
         final String postBody = client.uploadFile(baseUrl + "/admin/index/storm-events", fixture);
 
-        assertTrue(postBody.contains("\"jobId\""),
-            "Response should contain jobId: " + postBody);
-        assertTrue(postBody.contains("\"status\""),
-            "Response should contain status field: " + postBody);
-        assertTrue(postBody.contains("RUNNING"),
-            "Response should show RUNNING status: " + postBody);
+        JSONAssert.assertEquals("""
+            {"status": "RUNNING"}
+            """, postBody, JSONCompareMode.NON_EXTENSIBLE);
 
-        final String jobId = GraphQLClient.extractJobId(postBody);
-        assertNotNull(jobId, "Job ID should not be null");
+        final String finalStatus = TestHelper.pollUntilTerminal(baseUrl, GraphQLUtil.extractJobId(postBody));
 
-        final String finalStatus = TestHelper.pollUntilTerminal(baseUrl, jobId);
-        assertTrue(finalStatus.contains("\"DONE\""),
-            "Expected DONE status but got: " + finalStatus);
-        assertTrue(finalStatus.contains("\"jobId\""),
-            "Final response should contain jobId: " + finalStatus);
+        JSONAssert.assertEquals("""
+            {"status": "DONE"}
+            """, finalStatus, JSONCompareMode.NON_EXTENSIBLE);
     }
 
     @Test

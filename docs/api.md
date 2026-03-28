@@ -23,10 +23,12 @@ the Spring Boot startup banner.
 Execute a GraphQL query or mutation.
 
 **Request:**
+
 - `Content-Type: application/json`
 - Body: `{"query": "...", "variables": {...}}`
 
 **Response:**
+
 - `200 OK` with `{"data": {...}}` on success
 - `200 OK` with `{"errors": [...]}` on validation or execution errors (GraphQL spec: errors are
   always returned with HTTP 200)
@@ -61,10 +63,12 @@ Opens the GraphiQL browser-based IDE. Enabled by default. Navigate to
 Trigger ingestion of a NOAA Storm Events CSV file. The request body is multipart form data.
 
 **Request:**
+
 - `Content-Type: multipart/form-data`
 - Form field: `file` — the decompressed CSV file
 
 **Response `202 Accepted`:**
+
 ```json
 {"jobId": "550e8400-e29b-41d4-a716-446655440000", "status": "RUNNING"}
 ```
@@ -83,9 +87,11 @@ curl -X POST http://localhost:8080/admin/index/storm-events \
 Trigger ingestion of NWS Area Forecast Discussions from the live NWS API.
 
 **Request:**
+
 - Optional query parameter: `since=yyyy-MM-dd` — only fetch discussions issued after this date
 
 **Response `202 Accepted`:**
+
 ```json
 {"jobId": "550e8400-e29b-41d4-a716-446655440001", "status": "RUNNING"}
 ```
@@ -107,6 +113,7 @@ curl -X POST "http://localhost:8080/admin/index/forecast-discussions?since=2024-
 Poll the status of an ingestion job.
 
 **Response `200 OK`:**
+
 ```json
 {
   "jobId": "550e8400-e29b-41d4-a716-446655440000",
@@ -117,6 +124,7 @@ Poll the status of an ingestion job.
 ```
 
 `status` values:
+
 - `RUNNING` — ingestion is in progress
 - `DONE` — ingestion completed successfully
 - `FAILED` — ingestion failed; see `error` field for message
@@ -144,6 +152,7 @@ done
 Return document counts and index sizes.
 
 **Response `200 OK`:**
+
 ```json
 {
   "storm_events": {"docCount": 45230, "storeSizeBytes": 524288000},
