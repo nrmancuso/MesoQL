@@ -138,7 +138,7 @@ All open questions are resolved:
 | 1 | `Long` scalar for `damageProperty` | Add `graphql-java-extended-scalars`; use `Long` scalar in SDL |
 | 2 | `ComparisonFilter.op` — enum or String | `ComparisonOp` enum (`GT`, `GTE`, `LT`, `LTE`, `EQ`, `NEQ`); update `OpenSearchService` accordingly |
 | 3 | Ingestion endpoint — sync or async | `202 Accepted` + UUID job ID; `GET /admin/index/{jobId}` for status polling |
-| 4 | Integration test strategy | Testcontainers wrapping the Docker Compose stack; keep `integration-tests` as a separate module |
+| 4 | Integration test strategy | Real Docker Compose stack (same pattern as PR #22); keep `integration-tests` as a separate module |
 | 5 | Server port | Keep Spring Boot default `8080` |
 
 ### Ingestion job tracking design
@@ -162,11 +162,22 @@ Jobs are keyed by UUID and updated by the background ingestion thread.
 
 ### Integration test approach
 
-The `integration-tests` module uses Testcontainers to start OpenSearch and Ollama from the
-existing `docker-compose.yml`. Tests run against a real stack, giving higher fidelity than
-mocks. The module remains separate from `app` so it can be excluded from the standard
-`./gradlew test` run and triggered explicitly (e.g., `./gradlew :integration-tests:test`)
-or in a dedicated CI job.
+Mirrors the infrastructure from PR #22 (Issue #4, not yet merged), adapted for HTTP instead
+of shell. PR #22's shell-based tests are superseded by this work and should not be merged.
+
+- `integration-tests/build.gradle.kts` depends on `:app:bootJar`; only runs when explicitly
+  requested (`./gradlew :integration-tests:test`)
+- Tests launch the app JAR as a subprocess (`ProcessBuilder`) on a configured port; wait for
+  readiness before running assertions
+- `IntegrationEnvironment` resolves server URL, OpenSearch URL, and Ollama URL from system
+  properties / env vars (same pattern as PR #22)
+- `StackReadiness` checks that OpenSearch, Ollama, and the app server are all accepting
+  connections before any test runs
+- Fixture data seeded before the test suite runs (small CSV + AFD fixture JSON, as in PR #22)
+- Tests use `java.net.http.HttpClient` to POST GraphQL documents to `/graphql` and poll
+  admin endpoints
+- CI: a separate `integration-test` job following PR #22's CI pattern
+  (`start-stack.sh` → build JAR → start server → run tests)
 
 ---
 
@@ -260,11 +271,19 @@ public record SearchRequest(
 | `obsidian/components/GraphQL.md` | Schema decisions, resolver design, spring-graphql config |
 
 ### Integration tests
-Add `integration-tests` to `settings.gradle.kts` and create:
+Add `integration-tests` to `settings.gradle.kts` and create (following PR #22's patterns):
 | File | Purpose |
 |---|---|
-| `integration-tests/build.gradle.kts` | `@SpringBootTest` + Testcontainers dependencies |
-| `integration-tests/src/test/java/…/GraphQLSearchIT.java` | Full-stack tests via Testcontainers (OpenSearch + Ollama); GraphQL wiring, validation, and ingestion job lifecycle |
+| `integration-tests/build.gradle.kts` | JUnit 5; depends on `:app:bootJar`; opt-in only |
+| `integration-tests/src/test/java/…/support/IntegrationEnvironment.java` | Resolves server/OpenSearch/Ollama URLs and JAR path |
+| `integration-tests/src/test/java/…/support/StackReadiness.java` | Waits for all services to be ready |
+| `integration-tests/src/test/java/…/support/GraphQLClient.java` | HTTP client wrapper for posting GraphQL documents |
+| `integration-tests/src/test/java/…/support/AppServerExtension.java` | JUnit 5 extension: starts/stops JAR subprocess |
+| `integration-tests/src/test/java/…/GraphQLSearchSmokeTest.java` | Happy-path search for each source |
+| `integration-tests/src/test/java/…/GraphQLValidationTest.java` | Input validation error scenarios |
+| `integration-tests/src/test/java/…/AdminIndexTest.java` | Ingestion job lifecycle |
+| `integration-tests/fixtures/storm-events.csv` | Small fixture CSV (reuse from PR #22) |
+| `integration-tests/fixtures/forecast-discussion-products.json` | AFD fixture (reuse from PR #22) |
 
 ---
 
@@ -413,18 +432,32 @@ mesoql:
 5. Update `Justfile` with new `just serve`, `just index-storm`, `just index-afd`, `just stats` targets
 
 ### Phase 5 — Integration tests
+Modelled on PR #22 (Issue #4) adapted for HTTP. Read PR #22's files for patterns to follow.
+
 1. Add `"integration-tests"` to `settings.gradle.kts`
-2. Create `integration-tests/build.gradle.kts` with Testcontainers + Spring Boot test dependencies
-3. Configure Testcontainers to start services from `docker-compose.yml` (OpenSearch + Ollama)
-   before the test suite; wire the container ports into Spring's `application.yml` via
-   `@DynamicPropertySource`
-4. Write `GraphQLSearchIT.java`:
-   - Test happy-path `search` query for each source against real OpenSearch/Ollama containers
-   - Test input validation errors (unknown field, `IN` on numeric field, etc.)
-   - Test `synthesize`/`clusterByTheme` mutual exclusion rejection
-   - Test admin index job lifecycle: POST → 202 → poll GET until DONE
-   - Test GraphiQL endpoint responds at `/graphiql`
-5. Verify `./gradlew :integration-tests:test` passes with the stack running
+2. Create `integration-tests/build.gradle.kts` following PR #22's pattern:
+   - Depends on `:app:bootJar`; only runs when explicitly requested
+   - JUnit 5 only (no Spring Boot test dependencies needed)
+3. Write support classes in `com.mesoql.integration.support`:
+   - `IntegrationEnvironment` — resolves server URL (`http://localhost:8080` default),
+     OpenSearch URL, Ollama URL from system props / env vars; resolves JAR path
+   - `StackReadiness` — waits for OpenSearch, Ollama, and the app server HTTP port to accept
+     connections (adapt from PR #22's `StackReadiness`)
+   - `GraphQLClient` — wraps `java.net.http.HttpClient`; `search()` method posts a GraphQL
+     document and returns the parsed JSON response
+   - `AppServerExtension` — JUnit 5 extension that starts the JAR subprocess before all tests
+     and stops it after; similar role to PR #22's `ShellExtension`
+4. Seed fixtures before tests run (small CSV for storm_events, AFD JSON fixture for
+   forecast_discussions — reuse PR #22's fixture files as a starting point)
+5. Write test classes:
+   - `GraphQLSearchSmokeTest` — happy-path `search` for each source; asserts hits returned
+   - `GraphQLValidationTest` — unknown field, IN on numeric, BETWEEN on keyword, mutual
+     exclusion; asserts GraphQL error responses with descriptive messages
+   - `AdminIndexTest` — POST to trigger ingestion → 202 + job ID → poll until DONE
+6. Update `.github/workflows/test.yml` following PR #22's CI pattern:
+   - Separate `integration-test` job; calls `start-stack.sh`, builds JAR, runs
+     `./gradlew :integration-tests:test`
+7. Verify `./gradlew :integration-tests:test` passes with the stack running
 
 ### Phase 6 — Docs and obsidian cleanup
 1. Delete `docs/grammar.md`, `docs/cli.md`
