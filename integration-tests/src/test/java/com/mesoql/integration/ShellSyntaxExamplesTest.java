@@ -172,51 +172,86 @@ class ShellSyntaxExamplesTest {
     @Test
     @DisplayName("runs the syntax doc explain example")
     void runsExplainExample(ShellSession shell) {
-        // explanation sentence text varies across Ollama versions even with seed=1;
-        // assert deterministic metadata and structural presence of the explanation field.
-        final ShellResult result = shell.sendLine(
-            compactQuery("""
+        final String expectedOutput = """
+            MesoQL (type \\q to quit)
+
+            mesoql> SEARCH forecast_discussions WHERE SEMANTIC("atmospheric river precipitation") AND region IN ("Pacific Northwest") EXPLAIN LIMIT 5
+
+
+            --- [1] ---
+              discussion_id:       afd-1_chunk_0
+              season:              winter
+              office:              NWS Seattle WA
+              issuance_time:       2024-12-10T12:00:00+00:00
+              text:                An atmospheric river will bring prolonged precipitation and mountain snow to the Pacific Northwest through Wednesday. Strong onshore flow will maintain heavy rain along the coast and rising snow levels inland.
+              region:              Pacific Northwest
+              explanation:         This event is semantically relevant to the user's search because it specifically mentions "atmospheric river" precipitation, which matches the user's query by highlighting a weather phenomenon characterized by a long, narrow region in the atmosphere that transports large amounts of water vapor and leads to significant precipitation.
+
+            --- [2] ---
+              discussion_id:       afd-2_chunk_0
+              season:              winter
+              office:              NWS Portland OR
+              issuance_time:       2024-12-10T15:00:00+00:00
+              text:                A strong moisture plume supports atmospheric river precipitation with heavy rain and periods of mountain snow across northwest Oregon. Hydrologic concerns increase as successive waves reinforce the moist southwest flow.
+              region:              Pacific Northwest
+              explanation:         This event is semantically relevant to the user's search because it specifically mentions "atmospheric river precipitation", which matches the exact phrase used in the search query, indicating a strong connection between the two.
+
+            %s
+            """.formatted(PROMPT).stripTrailing();
+        assertSuccessfulQuery(
+            shell,
+            """
                 SEARCH forecast_discussions
                 WHERE SEMANTIC("atmospheric river precipitation")
                 AND region IN ("Pacific Northwest")
                 EXPLAIN
                 LIMIT 5
-                """),
-            Duration.ofSeconds(240));
-        assertFalse(result.text().contains("ERROR:"), result.text());
-        assertTrue(result.promptSeenAgain(), result.text());
-        assertTrue(result.text().contains("discussion_id:       afd-1_chunk_0"), result.text());
-        assertTrue(result.text().contains("office:              NWS Seattle WA"), result.text());
-        assertTrue(result.text().contains("discussion_id:       afd-2_chunk_0"), result.text());
-        assertTrue(result.text().contains("office:              NWS Portland OR"), result.text());
-        assertTrue(result.text().contains("  explanation:"), result.text());
+                """.strip(),
+            Duration.ofSeconds(240),
+            expectedOutput);
     }
 
     @Test
     @DisplayName("runs the syntax doc cluster example")
     void runsClusterExample(ShellSession shell) {
-        // cluster description text varies across Ollama versions even with seed=1;
-        // assert deterministic cluster names and record assignments.
-        final ShellResult result = shell.sendLine(
-            compactQuery("""
+        final String expectedOutput = """
+            MesoQL (type \\q to quit)
+
+            mesoql> SEARCH storm_events WHERE SEMANTIC("hurricane damage") AND state IN ("FL", "TX", "LA") CLUSTER BY THEME LIMIT 30
+
+
+            === Clusters ===
+            Based on the provided weather records, I've grouped them into 4 thematic clusters:
+
+            **Cluster 1: Hurricane Landfalls**
+            Records: 1, 2, 3
+            Description: These records share a common characteristic of being related to hurricanes making landfall, resulting in significant damage.
+
+            **Cluster 2: Storm Surge Impacts**
+            Records: 4, 5, 6
+            Description: This cluster is characterized by records that highlight the devastating effects of storm surges caused by hurricanes, leading to extensive coastal damage.
+
+            **Cluster 3: Wind-Related Damage**
+            Records: 7, 8, 9
+            Description: These records are united by their focus on the destructive power of hurricane-force winds, which caused significant damage and destruction.
+
+            **Cluster 4: Flooding and Rainfall**
+            Records: 10, 11, 12
+            Description: This cluster is defined by records that emphasize the impact of heavy rainfall and flooding associated with hurricanes, resulting in widespread damage and displacement.
+
+            %s
+            """.formatted(PROMPT).stripTrailing();
+        assertSuccessfulQuery(
+            shell,
+            """
                 SEARCH storm_events
                 WHERE SEMANTIC("hurricane damage")
                 AND state IN ("FL", "TX", "LA")
                 CLUSTER BY THEME
                 LIMIT 30
-                """),
-            Duration.ofSeconds(180));
-        assertFalse(result.text().contains("ERROR:"), result.text());
-        assertTrue(result.promptSeenAgain(), result.text());
-        assertTrue(result.text().contains("=== Clusters ==="), result.text());
-        assertTrue(result.text().contains("**Cluster 1: Hurricane Landfalls**"), result.text());
-        assertTrue(result.text().contains("Records: 1, 2, 3"), result.text());
-        assertTrue(result.text().contains("**Cluster 2: Storm Surge Impacts**"), result.text());
-        assertTrue(result.text().contains("Records: 4, 5, 6"), result.text());
-        assertTrue(result.text().contains("**Cluster 3: Wind-Related Damage**"), result.text());
-        assertTrue(result.text().contains("Records: 7, 8, 9"), result.text());
-        assertTrue(result.text().contains("**Cluster 4: Flooding and Rainfall**"), result.text());
-        assertTrue(result.text().contains("Records: 10, 11, 12"), result.text());
+                """.strip(),
+            Duration.ofSeconds(180),
+            expectedOutput);
     }
 
     private static void assertSuccessfulQuery(ShellSession shell, String query, String expectedOutput) {
