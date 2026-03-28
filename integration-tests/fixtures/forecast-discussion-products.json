@@ -1,0 +1,16 @@
+{
+  "@graph": [
+    {
+      "id": "afd-1",
+      "productText": "An atmospheric river will bring prolonged precipitation and mountain snow to the Pacific Northwest through Wednesday. Strong onshore flow will maintain heavy rain along the coast and rising snow levels inland.",
+      "issuanceTime": "2024-12-10T12:00:00+00:00",
+      "senderName": "NWS Seattle WA"
+    },
+    {
+      "id": "afd-2",
+      "productText": "A strong moisture plume supports atmospheric river precipitation with heavy rain and periods of mountain snow across northwest Oregon. Hydrologic concerns increase as successive waves reinforce the moist southwest flow.",
+      "issuanceTime": "2024-12-10T15:00:00+00:00",
+      "senderName": "NWS Portland OR"
+    }
+  ]
+}

@@ -9,3 +9,4 @@ gradle-local.properties
 data/*.csv
 obsidian/.obsidian/workspace.json
 obsidian/.obsidian/workspace-mobile.json
+.gradle-test-home/

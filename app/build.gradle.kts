@@ -11,12 +11,7 @@ dependencies {
     implementation(libs.picocli.spring.boot.starter)
     implementation(libs.opensearch.java)
     implementation(libs.jline)
-}
-
-configurations {
-    runtimeClasspath {
-        exclude(group = "commons-logging", module = "commons-logging")
-    }
+    runtimeOnly("commons-logging:commons-logging:1.3.5")
 }
 
 tasks.bootJar {

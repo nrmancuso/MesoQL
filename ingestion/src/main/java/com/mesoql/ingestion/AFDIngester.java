@@ -3,6 +3,7 @@ package com.mesoql.ingestion;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mesoql.MesoQLException;
+import com.mesoql.config.MesoQLConfig;
 import com.mesoql.ollama.OllamaClient;
 import com.mesoql.search.OpenSearchService;
 import org.opensearch.client.opensearch.core.bulk.BulkOperation;
@@ -64,6 +65,7 @@ public class AFDIngester {
 
     private final OpenSearchService searchService;
     private final OllamaClient ollamaClient;
+    private final String nwsApiBaseUrl;
     private final HttpClient http = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -72,10 +74,12 @@ public class AFDIngester {
      *
      * @param searchService the OpenSearch client wrapper
      * @param ollamaClient the Ollama client used for embeddings
+     * @param config the application configuration
      */
-    public AFDIngester(OpenSearchService searchService, OllamaClient ollamaClient) {
+    public AFDIngester(OpenSearchService searchService, OllamaClient ollamaClient, MesoQLConfig config) {
         this.searchService = searchService;
         this.ollamaClient = ollamaClient;
+        this.nwsApiBaseUrl = config.getNwsApiBaseUrl();
     }
 
     /**
@@ -155,7 +159,7 @@ public class AFDIngester {
      * @throws InterruptedException if the HTTP request is interrupted
      */
     private List<Map<String, Object>> fetchAFDs() throws IOException, InterruptedException {
-        final String url = "https://api.weather.gov/products?type=AFD&limit=500";
+        final String url = nwsApiBaseUrl + "/products?type=AFD&limit=500";
         final HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(url))
             .header("User-Agent", "MesoQL/0.1.0")

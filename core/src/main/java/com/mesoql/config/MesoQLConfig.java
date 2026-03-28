@@ -10,6 +10,7 @@ public class MesoQLConfig {
 
     private String opensearchUrl = "http://localhost:9200";
     private String ollamaBaseUrl = "http://localhost:11434";
+    private String nwsApiBaseUrl = "https://api.weather.gov";
     private String embedModel = "nomic-embed-text";
     private String generateModel = "llama3";
 
@@ -32,6 +33,16 @@ public class MesoQLConfig {
      * Sets the Ollama base URL.
      */
     public void setOllamaBaseUrl(String ollamaBaseUrl) { this.ollamaBaseUrl = ollamaBaseUrl; }
+
+    /**
+     * Returns the NWS API base URL.
+     */
+    public String getNwsApiBaseUrl() { return nwsApiBaseUrl; }
+
+    /**
+     * Sets the NWS API base URL.
+     */
+    public void setNwsApiBaseUrl(String nwsApiBaseUrl) { this.nwsApiBaseUrl = nwsApiBaseUrl; }
 
     /**
      * Returns the name of the embedding model.

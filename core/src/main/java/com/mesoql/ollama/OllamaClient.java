@@ -103,7 +103,11 @@ public class OllamaClient {
             final String body = mapper.writeValueAsString(Map.of(
                 "model", generateModel,
                 "prompt", prompt,
-                "stream", false
+                "stream", false,
+                "options", Map.of(
+                    "temperature", 0,
+                    "seed", 1
+                )
             ));
 
             final HttpRequest request = HttpRequest.newBuilder()

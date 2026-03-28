@@ -65,12 +65,21 @@ opensearch-check:
 mesoql *args:
     java -jar {{jar}} {{args}}
 
+# Start the full integration-test stack and seed fixtures
+integration-stack:
+    bash integration-tests/scripts/start-stack.sh
+
+# Start the stack and run the shell-based integration tests
+integration-test:
+    bash integration-tests/scripts/start-stack.sh
+    ./gradlew :integration-tests:test
+
 # ── Ingestion ─────────────────────────────────────────────────────────────────
 
 # Index a NOAA Storm Events CSV (usage: just index-storm ./StormEvents_2023.csv)
 index-storm file:
     just mesoql index --source storm_events --data {{file}}
 
-# Index NWS AFDs from NWS API
-index-afd:
+# Index NWS forecast discussions from the NWS API
+index-forecast-discussions:
     just mesoql index --source forecast_discussions
