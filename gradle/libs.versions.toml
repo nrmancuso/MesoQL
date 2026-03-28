@@ -10,6 +10,7 @@ spotbugs-tool = "4.9.3"
 spring-boot = "4.0.5"
 
 [libraries]
+graphql-extended-scalars = { module = "com.graphql-java:graphql-java-extended-scalars", version = "22.0" }
 httpcore5 = { module = "org.apache.httpcomponents.core5:httpcore5", version.ref = "httpcore5" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
@@ -19,7 +20,9 @@ opensearch-java = { module = "org.opensearch.client:opensearch-java", version.re
 opensearch-rest-client = { module = "org.opensearch.client:opensearch-rest-client", version.ref = "opensearch-rest-client" }
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
+spring-boot-starter-graphql = { module = "org.springframework.boot:spring-boot-starter-graphql" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 
 [bundles]
 opensearch-core = ["opensearch-java", "opensearch-rest-client"]

@@ -1,4 +1,8 @@
 spring:
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
   main:
     banner-mode: off
     log-startup-info: false

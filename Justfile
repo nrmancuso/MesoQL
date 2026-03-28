@@ -61,16 +61,25 @@ opensearch-check:
 
 # ── MesoQL ───────────────────────────────────────────────────────────────────
 
-# Start the interactive MesoQL shell
-mesoql *args:
-    java -jar {{jar}} {{args}}
+# Start the MesoQL HTTP server (GraphQL at :8080/graphql, GraphiQL at :8080/graphiql)
+serve:
+    java -jar {{jar}}
 
 # ── Ingestion ─────────────────────────────────────────────────────────────────
 
-# Index a NOAA Storm Events CSV (usage: just index-storm ./StormEvents_2023.csv)
+# Index a NOAA Storm Events CSV via admin endpoint (prints job ID)
 index-storm file:
-    just mesoql index --source storm_events --data {{file}}
+    curl -s -X POST "http://localhost:8080/admin/index/storm-events" \
+         -F "file=@{{file}}" | jq .
 
-# Index NWS AFDs from NWS API
+# Poll ingestion job status
+index-status job_id:
+    curl -s "http://localhost:8080/admin/index/{{job_id}}" | jq .
+
+# Index NWS AFDs via admin endpoint (prints job ID)
 index-afd:
-    just mesoql index --source forecast_discussions
+    curl -s -X POST "http://localhost:8080/admin/index/forecast-discussions" | jq .
+
+# Show index stats via admin endpoint
+stats:
+    curl -s "http://localhost:8080/admin/stats" | jq .

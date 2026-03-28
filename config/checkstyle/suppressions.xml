@@ -5,4 +5,5 @@
 <suppressions>
     <suppress checks="MissingJavadocType" files="[/\\]src[/\\]test[/\\]java[/\\].*"/>
     <suppress checks="MagicNumber" files="[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    <suppress checks="UncommentedMain" files="MesoQLApplication\.java"/>
 </suppressions>
