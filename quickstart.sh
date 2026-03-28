@@ -4,6 +4,7 @@ set -euo pipefail
 JAR="app/build/libs/mesoql-0.1.0.jar"
 STORM_GZ="data/StormEvents_2025_sample.csv.gz"
 STORM_CSV="data/StormEvents_2025_sample.csv"
+SERVER_URL="http://localhost:8080"
 
 # ── Services ──────────────────────────────────────────────────────────────────
 
@@ -38,22 +39,67 @@ done
 echo "Building MesoQL..."
 ./gradlew bootJar --quiet
 
+# ── Server ────────────────────────────────────────────────────────────────────
+
+echo "Starting MesoQL server..."
+java -jar "$JAR" &
+SERVER_PID=$!
+
+echo "Waiting for MesoQL server..."
+until curl -sf -X POST "$SERVER_URL/graphql" \
+    -H "Content-Type: application/json" \
+    -d '{"query":"{ __typename }"}' > /dev/null 2>&1; do
+    sleep 2
+done
+echo "MesoQL server is ready."
+
 # ── Ingest ────────────────────────────────────────────────────────────────────
+
+poll_job() {
+    local job_id="$1"
+    local label="$2"
+    echo "Waiting for $label ingestion (job $job_id)..."
+    while true; do
+        local status
+        status=$(curl -sf "$SERVER_URL/admin/index/$job_id" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+        if [ "$status" = "DONE" ]; then
+            echo "$label ingestion complete."
+            return 0
+        elif [ "$status" = "FAILED" ]; then
+            echo "ERROR: $label ingestion failed." >&2
+            return 1
+        fi
+        sleep 3
+    done
+}
 
 if [ ! -f "$STORM_CSV" ]; then
     echo "Decompressing $STORM_GZ..."
     gunzip -k "$STORM_GZ"
 fi
 
-echo "Indexing NOAA Storm Events (2025 sample, 500 rows)..."
-java -jar "$JAR" index --source storm_events --data "$STORM_CSV"
+echo "Indexing NOAA Storm Events (2025 sample)..."
+STORM_JOB=$(curl -sf -X POST "$SERVER_URL/admin/index/storm-events" \
+    -F "file=@$STORM_CSV" | grep -o '"jobId":"[^"]*"' | cut -d'"' -f4)
+poll_job "$STORM_JOB" "storm events"
 
 echo "Indexing NWS Area Forecast Discussions..."
-java -jar "$JAR" index --source forecast_discussions
+AFD_JOB=$(curl -sf -X POST "$SERVER_URL/admin/index/forecast-discussions" | \
+    grep -o '"jobId":"[^"]*"' | cut -d'"' -f4)
+poll_job "$AFD_JOB" "forecast discussions"
 
-# ── Shell ─────────────────────────────────────────────────────────────────────
+# ── Ready ─────────────────────────────────────────────────────────────────────
 
 echo ""
-echo "Ready. Dropping into MesoQL shell."
+echo "MesoQL is ready. Server PID: $SERVER_PID"
 echo ""
-exec java -jar "$JAR"
+echo "  GraphQL endpoint:  $SERVER_URL/graphql"
+echo "  GraphiQL explorer: $SERVER_URL/graphiql"
+echo "  Index stats:       $SERVER_URL/admin/stats"
+echo ""
+echo "Example query:"
+echo '  curl -s -X POST '"$SERVER_URL"'/graphql \'
+echo '    -H "Content-Type: application/json" \'
+echo '    -d '"'"'{"query":"{ search(source: STORM_EVENTS, input: { semantic: \"tornado\", limit: 5 }) { hits { ... on StormEventHit { eventId state narrative } } } }"}'"'"' | jq .'
+echo ""
+echo "To stop the server: kill $SERVER_PID"

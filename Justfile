@@ -6,19 +6,23 @@ jar := "app/build/libs/mesoql-0.1.0.jar"
 default:
     @just --list
 
-# Full quickstart: services, models, build, ingest, shell
+# Full quickstart: services, models, build, ingest, serve
 quickstart:
     ./quickstart.sh
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 
-# Compile (including ANTLR source generation)
+# Compile
 build:
     ./gradlew compileJava
 
-# Run all unit tests
+# Run unit tests (excludes integration tests)
 test:
-    ./gradlew test
+    ./gradlew test -x :integration-tests:test
+
+# Run integration tests (requires a running stack: just up && just serve)
+integration-test:
+    ./gradlew :integration-tests:test
 
 # Run Checkstyle on main sources
 checkstyle:
