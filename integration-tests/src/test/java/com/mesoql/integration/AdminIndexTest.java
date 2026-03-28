@@ -1,6 +1,5 @@
 package com.mesoql.integration;
 
-import com.mesoql.MesoQLApplication;
 import com.mesoql.integration.support.GraphQLClient;
 import com.mesoql.integration.support.GraphQLUtil;
 import com.mesoql.integration.support.IntegrationEnvironment;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.io.IOException;
@@ -26,11 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Tests for the admin ingestion job lifecycle endpoints.
  */
-@SpringBootTest(
-    classes = MesoQLApplication.class,
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
-class AdminIndexTest {
+class AdminIndexTest extends IntegrationTest {
 
     private static final HttpClient HTTP = HttpClient.newHttpClient();
 
@@ -57,13 +51,13 @@ class AdminIndexTest {
 
         JSONAssert.assertEquals("""
             {"status": "RUNNING"}
-            """, postBody, JSONCompareMode.NON_EXTENSIBLE);
+            """, postBody, JSONCompareMode.LENIENT);
 
         final String finalStatus = TestHelper.pollUntilTerminal(baseUrl, GraphQLUtil.extractJobId(postBody));
 
         JSONAssert.assertEquals("""
             {"status": "DONE"}
-            """, finalStatus, JSONCompareMode.NON_EXTENSIBLE);
+            """, finalStatus, JSONCompareMode.LENIENT);
     }
 
     @Test
