@@ -20,11 +20,14 @@ class GraphQLValidationTest {
 
     @Test
     void testUnknownField() throws IOException, InterruptedException {
-        final String query =
-            "{ search(source: STORM_EVENTS, input: {" +
-            "  semantic: \"tornado\"," +
-            "  filters: { in: [{ field: \"unknown_field\", values: [\"foo\"] }] }" +
-            "}) { hits { ... on StormEventHit { eventId } } } }";
+        final String query = """
+            {
+              search(source: STORM_EVENTS, input: {
+                semantic: "tornado"
+                filters: { in: [{ field: "unknown_field", values: ["foo"] }] }
+              }) { hits { ... on StormEventHit { eventId } } }
+            }
+            """;
 
         final String response = CLIENT.execute(query);
 
@@ -34,11 +37,14 @@ class GraphQLValidationTest {
 
     @Test
     void testInOnNumericField() throws IOException, InterruptedException {
-        final String query =
-            "{ search(source: STORM_EVENTS, input: {" +
-            "  semantic: \"tornado\"," +
-            "  filters: { in: [{ field: \"fatalities\", values: [\"3\"] }] }" +
-            "}) { hits { ... on StormEventHit { eventId } } } }";
+        final String query = """
+            {
+              search(source: STORM_EVENTS, input: {
+                semantic: "tornado"
+                filters: { in: [{ field: "fatalities", values: ["3"] }] }
+              }) { hits { ... on StormEventHit { eventId } } }
+            }
+            """;
 
         final String response = CLIENT.execute(query);
 
@@ -48,11 +54,14 @@ class GraphQLValidationTest {
 
     @Test
     void testBetweenOnKeywordField() throws IOException, InterruptedException {
-        final String query =
-            "{ search(source: STORM_EVENTS, input: {" +
-            "  semantic: \"tornado\"," +
-            "  filters: { between: [{ field: \"state\", min: 1.0, max: 5.0 }] }" +
-            "}) { hits { ... on StormEventHit { eventId } } } }";
+        final String query = """
+            {
+              search(source: STORM_EVENTS, input: {
+                semantic: "tornado"
+                filters: { between: [{ field: "state", min: 1.0, max: 5.0 }] }
+              }) { hits { ... on StormEventHit { eventId } } }
+            }
+            """;
 
         final String response = CLIENT.execute(query);
 
@@ -62,12 +71,15 @@ class GraphQLValidationTest {
 
     @Test
     void testMutualExclusion() throws IOException, InterruptedException {
-        final String query =
-            "{ search(source: STORM_EVENTS, input: {" +
-            "  semantic: \"tornado\"," +
-            "  synthesize: \"Summarize these events\"," +
-            "  clusterByTheme: true" +
-            "}) { hits { ... on StormEventHit { eventId } } synthesis clusters } }";
+        final String query = """
+            {
+              search(source: STORM_EVENTS, input: {
+                semantic: "tornado"
+                synthesize: "Summarize these events"
+                clusterByTheme: true
+              }) { hits { ... on StormEventHit { eventId } } synthesis clusters }
+            }
+            """;
 
         final String response = CLIENT.execute(query);
 
@@ -77,10 +89,13 @@ class GraphQLValidationTest {
 
     @Test
     void testUnknownSource() throws IOException, InterruptedException {
-        final String query =
-            "{ search(source: UNKNOWN_SOURCE, input: { semantic: \"tornado\" }) {" +
-            "  hits { ... on StormEventHit { eventId } }" +
-            "} }";
+        final String query = """
+            {
+              search(source: UNKNOWN_SOURCE, input: { semantic: "tornado" }) {
+                hits { ... on StormEventHit { eventId } }
+              }
+            }
+            """;
 
         final String response = CLIENT.execute(query);
 

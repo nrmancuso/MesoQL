@@ -44,10 +44,13 @@ class GraphQLSearchSmokeTest {
     @Test
     @Order(1)
     void testSearchStormEvents() throws IOException, InterruptedException {
-        final String query =
-            "{ search(source: STORM_EVENTS, input: { semantic: \"tornado\", limit: 2 }) {" +
-            "  hits { ... on StormEventHit { eventId narrative } }" +
-            "} }";
+        final String query = """
+            {
+              search(source: STORM_EVENTS, input: { semantic: "tornado", limit: 2 }) {
+                hits { ... on StormEventHit { eventId narrative } }
+              }
+            }
+            """;
 
         final String response = CLIENT.execute(query);
 
@@ -60,10 +63,13 @@ class GraphQLSearchSmokeTest {
     @Test
     @Order(2)
     void testSearchForecastDiscussions() throws IOException, InterruptedException {
-        final String query =
-            "{ search(source: FORECAST_DISCUSSIONS, input: { semantic: \"atmospheric river\", limit: 2 }) {" +
-            "  hits { ... on ForecastDiscussionHit { discussionId text } }" +
-            "} }";
+        final String query = """
+            {
+              search(source: FORECAST_DISCUSSIONS, input: { semantic: "atmospheric river", limit: 2 }) {
+                hits { ... on ForecastDiscussionHit { discussionId text } }
+              }
+            }
+            """;
 
         final String response = CLIENT.execute(query);
 
@@ -76,39 +82,16 @@ class GraphQLSearchSmokeTest {
     private static void indexStormEvents() throws IOException, InterruptedException {
         final Path fixture = IntegrationEnvironment.repoRoot()
             .resolve("integration-tests/fixtures/storm-events.csv");
+        final String responseBody = CLIENT.uploadFile(
+            IntegrationEnvironment.adminIndexEndpoint() + "/storm-events", fixture);
 
-        final String boundary = "MesoQLBoundary";
-        final String fixtureContent = java.nio.file.Files.readString(fixture);
-        final String multipartBody = "--" + boundary + "\r\n" +
-            "Content-Disposition: form-data; name=\"file\"; filename=\"storm-events.csv\"\r\n" +
-            "Content-Type: text/csv\r\n" +
-            "\r\n" + fixtureContent + "\r\n" +
-            "--" + boundary + "--\r\n";
-
-        final HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(IntegrationEnvironment.adminIndexEndpoint() + "/storm-events"))
-            .timeout(Duration.ofSeconds(30))
-            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-            .POST(HttpRequest.BodyPublishers.ofString(multipartBody))
-            .build();
-
-        final HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 202) {
-            throw new IllegalStateException(
-                "Expected 202 from storm-events ingest but got " + response.statusCode()
-                    + ": " + response.body());
-        }
-
-        final String body = response.body();
-        final String jobId = extractJobId(body);
-        pollUntilDone(jobId);
+        pollUntilDone(GraphQLClient.extractJobId(responseBody));
     }
 
     private static void indexForecastDiscussions() throws IOException, InterruptedException {
         final HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(IntegrationEnvironment.adminIndexEndpoint() + "/forecast-discussions"))
             .timeout(Duration.ofSeconds(30))
-            .header("Content-Length", "0")
             .POST(HttpRequest.BodyPublishers.noBody())
             .build();
 
@@ -119,9 +102,7 @@ class GraphQLSearchSmokeTest {
                     + ": " + response.body());
         }
 
-        final String body = response.body();
-        final String jobId = extractJobId(body);
-        pollUntilDone(jobId);
+        pollUntilDone(GraphQLClient.extractJobId(response.body()));
     }
 
     private static void pollUntilDone(String jobId) throws IOException, InterruptedException {
@@ -144,21 +125,5 @@ class GraphQLSearchSmokeTest {
             Thread.sleep(POLL_INTERVAL_MS);
         }
         throw new IllegalStateException("Ingestion job did not complete within timeout");
-    }
-
-    private static String extractJobId(String responseBody) {
-        final int idx = responseBody.indexOf("\"jobId\"");
-        if (idx < 0) {
-            throw new IllegalStateException("No jobId in response: " + responseBody);
-        }
-        final int quoteStart = responseBody.indexOf('"', idx + 8);
-        if (quoteStart < 0) {
-            throw new IllegalStateException("Malformed jobId in response: " + responseBody);
-        }
-        final int quoteEnd = responseBody.indexOf('"', quoteStart + 1);
-        if (quoteEnd < 0) {
-            throw new IllegalStateException("Malformed jobId in response: " + responseBody);
-        }
-        return responseBody.substring(quoteStart + 1, quoteEnd);
     }
 }
