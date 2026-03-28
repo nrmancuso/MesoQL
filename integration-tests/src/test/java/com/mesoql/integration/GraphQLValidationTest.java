@@ -39,8 +39,12 @@ class GraphQLValidationTest {
             {
               search(source: STORM_EVENTS, input: {
                 semantic: "tornado"
-                filters: { in: [{ field: "unknown_field", values: ["foo"] }] }
-              }) { hits { ... on StormEventHit { eventId } } }
+                filters: {
+                  in: [{ field: "unknown_field", values: ["foo"] }]
+                }
+              }) {
+                hits { ... on StormEventHit { eventId } }
+              }
             }
             """;
 
@@ -61,8 +65,12 @@ class GraphQLValidationTest {
             {
               search(source: STORM_EVENTS, input: {
                 semantic: "tornado"
-                filters: { in: [{ field: "fatalities", values: ["3"] }] }
-              }) { hits { ... on StormEventHit { eventId } } }
+                filters: {
+                  in: [{ field: "fatalities", values: ["3"] }]
+                }
+              }) {
+                hits { ... on StormEventHit { eventId } }
+              }
             }
             """;
 
@@ -83,8 +91,12 @@ class GraphQLValidationTest {
             {
               search(source: STORM_EVENTS, input: {
                 semantic: "tornado"
-                filters: { between: [{ field: "state", min: 1.0, max: 5.0 }] }
-              }) { hits { ... on StormEventHit { eventId } } }
+                filters: {
+                  between: [{ field: "state", min: 1.0, max: 5.0 }]
+                }
+              }) {
+                hits { ... on StormEventHit { eventId } }
+              }
             }
             """;
 
@@ -107,7 +119,11 @@ class GraphQLValidationTest {
                 semantic: "tornado"
                 synthesize: "Summarize these events"
                 clusterByTheme: true
-              }) { hits { ... on StormEventHit { eventId } } synthesis clusters }
+              }) {
+                hits { ... on StormEventHit { eventId } }
+                synthesis
+                clusters
+              }
             }
             """;
 
