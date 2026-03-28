@@ -1,0 +1,80 @@
+scalar Long
+
+enum Source {
+  STORM_EVENTS
+  FORECAST_DISCUSSIONS
+}
+
+enum ComparisonOp {
+  EQ
+  NEQ
+  GT
+  GTE
+  LT
+  LTE
+}
+
+input InFilterInput {
+  field: String!
+  values: [String!]!
+}
+
+input BetweenFilterInput {
+  field: String!
+  min: Float!
+  max: Float!
+}
+
+input ComparisonFilterInput {
+  field: String!
+  op:   ComparisonOp!
+  value: String!
+}
+
+input FiltersInput {
+  in:          [InFilterInput!]
+  between:     [BetweenFilterInput!]
+  comparisons: [ComparisonFilterInput!]
+}
+
+input SearchInput {
+  semantic:       String!
+  filters:        FiltersInput
+  synthesize:     String
+  clusterByTheme: Boolean
+  explain:        Boolean
+  limit:          Int
+}
+
+type StormEventHit {
+  eventId:        String
+  state:          String
+  eventType:      String
+  beginDate:      String
+  fatalities:     Int
+  damageProperty: Long
+  narrative:      String
+  explanation:    String
+}
+
+type ForecastDiscussionHit {
+  discussionId: String
+  office:       String
+  region:       String
+  season:       String
+  issuanceTime: String
+  text:         String
+  explanation:  String
+}
+
+union SearchHit = StormEventHit | ForecastDiscussionHit
+
+type SearchResponse {
+  hits:      [SearchHit!]!
+  synthesis: String
+  clusters:  String
+}
+
+type Query {
+  search(source: Source!, input: SearchInput!): SearchResponse!
+}

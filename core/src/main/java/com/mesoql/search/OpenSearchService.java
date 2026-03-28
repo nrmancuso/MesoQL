@@ -129,6 +129,27 @@ public class OpenSearchService {
         return client.indices().stats(s -> s.index(index));
     }
 
+    /**
+     * Returns a plain summary of doc count and store size for the specified index.
+     * The returned map contains {@code docCount}, {@code deletedCount}, and {@code storeSizeBytes}.
+     */
+    public Map<String, Object> indexStatsSummary(String index) throws IOException {
+        final IndicesStatsResponse response = indexStats(index);
+        final Map<String, Object> info = new java.util.LinkedHashMap<>();
+        final org.opensearch.client.opensearch.indices.stats.IndicesStats stats =
+            response.indices() != null ? response.indices().get(index) : null;
+        if (stats != null && stats.total() != null) {
+            if (stats.total().docs() != null) {
+                info.put("docCount", stats.total().docs().count());
+                info.put("deletedCount", stats.total().docs().deleted());
+            }
+            if (stats.total().store() != null) {
+                info.put("storeSizeBytes", stats.total().store().sizeInBytes());
+            }
+        }
+        return info;
+    }
+
     private Query filterToQuery(FilterInput filter) {
         return switch (filter) {
             case InFilterInput f -> Query.of(q -> q
