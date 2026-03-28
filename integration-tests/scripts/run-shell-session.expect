@@ -1,0 +1,57 @@
+#!/usr/bin/expect -f
+
+set timeout $env(MESOQL_SHELL_TIMEOUT_SECONDS)
+set jar $env(MESOQL_SHELL_JAR)
+set home_dir $env(MESOQL_SHELL_HOME)
+set commands_file $env(MESOQL_SHELL_COMMANDS_FILE)
+
+proc send_commands {commands_path} {
+    set file_handle [open $commands_path r]
+    while {[gets $file_handle line] >= 0} {
+        send -- "$line\r"
+        expect {
+            "mesoql> " {
+                puts "__MESOQL_PROMPT_RETURNED__"
+            }
+            eof {
+                close $file_handle
+                return
+            }
+            timeout {
+                puts "__MESOQL_TIMEOUT__"
+                exit 124
+            }
+        }
+    }
+    close $file_handle
+}
+
+spawn -noecho java -Duser.home=$home_dir -jar $jar
+expect {
+    "mesoql> " {}
+    timeout {
+        puts "__MESOQL_TIMEOUT__"
+        exit 124
+    }
+    eof {
+        puts "__MESOQL_EARLY_EXIT__"
+        exit 1
+    }
+}
+
+send_commands $commands_file
+
+# send \q to trigger a clean shutdown; if the process already exited (e.g.
+# the test itself sent \q or exit), send will throw — that is expected.
+if {[catch {send -- "\\q\r"}]} {
+    exit 0
+}
+
+log_user 0
+expect {
+    eof { exit 0 }
+    timeout {
+        puts "__MESOQL_TIMEOUT__"
+        exit 124
+    }
+}

@@ -65,6 +65,14 @@ opensearch-check:
 mesoql *args:
     java -jar {{jar}} {{args}}
 
+# Start the full integration-test stack and seed fixtures
+integration-stack:
+    bash integration-tests/scripts/start-stack.sh
+
+# Run the shell-based integration tests
+integration-test:
+    bash integration-tests/scripts/run-integration-tests.sh
+
 # ── Ingestion ─────────────────────────────────────────────────────────────────
 
 # Index a NOAA Storm Events CSV (usage: just index-storm ./StormEvents_2023.csv)

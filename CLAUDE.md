@@ -38,6 +38,12 @@ context.
 new components, implementation details, or changes made. Add new notes for new concepts; update
 existing ones rather than duplicating. Keep notes concise and interlinked.
 
+## Issue Access
+
+If a task depends on the contents of a GitHub issue, PR, design doc, or other referenced link and
+that content is not available locally, treat the missing content as a blocker. Stop and ask the
+user for the missing text or access rather than proceeding on assumptions.
+
 ## Project Overview
 
 MesoQL is a self-hostable query engine for semantic search over weather data. It combines a
