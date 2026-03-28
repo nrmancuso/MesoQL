@@ -57,7 +57,6 @@ jobs:
       - name: Run integration tests
         run: |
           bash integration-tests/scripts/start-stack.sh
-          ./gradlew :app:bootJar
           ./gradlew :integration-tests:test
         env:
           GRADLE_USER_HOME: ${{ runner.temp }}/gradle-integration-home

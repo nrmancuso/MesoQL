@@ -14,20 +14,15 @@ import java.time.Duration;
  */
 public final class GraphQLClient {
 
-    /** CRLF line terminator required by RFC 2046 for multipart boundaries. */
+    /**
+     * CRLF line terminator required by RFC 2046 for multipart boundaries.
+     */
     private static final String CRLF = "\r\n";
     private static final String JSON_CONTENT_TYPE = "application/json";
     private static final String MULTIPART_BOUNDARY = "MesoQLTestBoundary";
 
     private final HttpClient httpClient;
     private final String endpoint;
-
-    /**
-     * Constructs a client targeting the default GraphQL endpoint.
-     */
-    public GraphQLClient() {
-        this(IntegrationEnvironment.graphqlEndpoint());
-    }
 
     /**
      * Constructs a client targeting the given endpoint URL.
@@ -67,7 +62,11 @@ public final class GraphQLClient {
      */
     public String uploadFile(String url, Path file) throws IOException, InterruptedException {
         final String fileContent = Files.readString(file);
-        final String filename = file.getFileName().toString();
+        final Path fileNamePath = file.getFileName();
+        if (fileNamePath == null) {
+            throw new IllegalArgumentException("File path has no filename component: " + file);
+        }
+        final String filename = fileNamePath.toString();
         final String multipartBody = buildMultipartBody(MULTIPART_BOUNDARY, filename, fileContent);
 
         final HttpRequest request = HttpRequest.newBuilder()
@@ -135,7 +134,10 @@ public final class GraphQLClient {
         final String escaped = query
             .replace("\\", "\\\\")
             .replace("\"", "\\\"")
-            .replace("\t", "\\t");
+            .replace("\t", "\\t")
+            .replace("\r\n", "\\n")
+            .replace("\r", "\\n")
+            .replace("\n", "\\n");
         return "{\"query\":\"" + escaped + "\"}";
     }
 

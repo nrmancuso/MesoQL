@@ -1,10 +1,13 @@
 package com.mesoql.integration;
 
-import com.mesoql.integration.support.AppServerExtension;
+import com.mesoql.MesoQLApplication;
 import com.mesoql.integration.support.GraphQLClient;
+import com.mesoql.integration.support.TestHelper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.io.IOException;
 
@@ -13,13 +16,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Smoke tests for the GraphQL search endpoint against both data sources.
- * Requires a running stack (OpenSearch, Ollama, and the app server).
- * Tests run in parallel after data ingestion.
+ * Requires a running OpenSearch and Ollama stack.
  */
-@ExtendWith(AppServerExtension.class)
+@SpringBootTest(
+    classes = MesoQLApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 class GraphQLSearchSmokeTest {
 
-    private static final GraphQLClient CLIENT = new GraphQLClient();
+    @LocalServerPort
+    private int port;
+
+    private GraphQLClient client;
+
+    @BeforeEach
+    void setUp() throws IOException, InterruptedException {
+        final String baseUrl = "http://localhost:" + port;
+        this.client = new GraphQLClient(baseUrl + "/graphql");
+        TestHelper.ensureDataSeeded(baseUrl);
+    }
 
     @Test
     @DisplayName("Search storm events by semantic query and verify response structure")
@@ -32,11 +47,11 @@ class GraphQLSearchSmokeTest {
             }
             """;
 
-        final String response = CLIENT.execute(query);
+        final String response = client.execute(query);
 
-        assertFalse(CLIENT.hasErrors(response),
+        assertFalse(client.hasErrors(response),
             "Expected no errors in response: " + response);
-        assertTrue(CLIENT.hasHits(response),
+        assertTrue(client.hasHits(response),
             "Expected at least one hit in response: " + response);
         assertTrue(response.contains("\"data\""),
             "Response should contain data object: " + response);
@@ -55,11 +70,11 @@ class GraphQLSearchSmokeTest {
             }
             """;
 
-        final String response = CLIENT.execute(query);
+        final String response = client.execute(query);
 
-        assertFalse(CLIENT.hasErrors(response),
+        assertFalse(client.hasErrors(response),
             "Expected no errors in response: " + response);
-        assertTrue(CLIENT.hasHits(response),
+        assertTrue(client.hasHits(response),
             "Expected at least one hit in response: " + response);
         assertTrue(response.contains("\"data\""),
             "Response should contain data object: " + response);
