@@ -1,5 +1,6 @@
 package com.mesoql.search;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -38,6 +39,7 @@ class InputValidatorTest {
     }
 
     @Test
+    @DisplayName("Accept valid storm events request with state filter")
     void validStormEventsRequestPasses() {
         final SearchRequest request = stormRequest(
             List.of(new InFilterInput("state", List.of("TX", "OK")))
@@ -46,6 +48,7 @@ class InputValidatorTest {
     }
 
     @Test
+    @DisplayName("Accept valid forecast discussions request with office filter")
     void validForecastDiscussionsRequestPasses() {
         final SearchRequest request = forecastRequest(
             List.of(new InFilterInput("office", List.of("BOU")))
@@ -54,6 +57,7 @@ class InputValidatorTest {
     }
 
     @Test
+    @DisplayName("Reject unknown source with validation error")
     void unknownSourceThrows() {
         final SearchRequest request = new SearchRequest(
             "unknown_source",
@@ -70,6 +74,7 @@ class InputValidatorTest {
     }
 
     @Test
+    @DisplayName("Reject unknown field in filter with validation error")
     void unknownFieldThrows() {
         final SearchRequest request = stormRequest(
             List.of(new InFilterInput("magnitude", List.of("5")))
@@ -80,6 +85,7 @@ class InputValidatorTest {
     }
 
     @Test
+    @DisplayName("Reject IN filter on integer field with validation error")
     void inFilterOnIntegerFieldThrows() {
         final SearchRequest request = stormRequest(
             List.of(new InFilterInput("fatalities", List.of("1", "2")))
@@ -90,6 +96,7 @@ class InputValidatorTest {
     }
 
     @Test
+    @DisplayName("Reject BETWEEN filter on keyword field with validation error")
     void betweenFilterOnKeywordFieldThrows() {
         final SearchRequest request = stormRequest(
             List.of(new BetweenFilterInput("state", 1.0, 10.0))
@@ -100,6 +107,7 @@ class InputValidatorTest {
     }
 
     @Test
+    @DisplayName("Reject invalid season value with validation error")
     void invalidSeasonValueThrows() {
         final SearchRequest request = forecastRequest(
             List.of(new InFilterInput("season", List.of("rainy")))
@@ -110,6 +118,7 @@ class InputValidatorTest {
     }
 
     @Test
+    @DisplayName("Reject synthesize and clusterByTheme together with validation error")
     void synthesizeAndClusterByThemeMutuallyExclusive() {
         final SearchRequest request = new SearchRequest(
             "storm_events",
@@ -126,6 +135,7 @@ class InputValidatorTest {
     }
 
     @Test
+    @DisplayName("Accept all valid season values (spring, summer, fall, winter)")
     void allValidSeasonValuePass() {
         for (final String season : List.of("spring", "summer", "fall", "winter")) {
             final SearchRequest request = forecastRequest(
