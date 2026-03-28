@@ -1,67 +1,96 @@
 # MesoQL
 
-MesoQL is an open-source query engine for semantic search over weather data. It combines a SQL-style
-DSL with vector search (OpenSearch k-NN) and local LLM inference (Ollama) to run expressive hybrid
-queries over NOAA storm event narratives and NWS Area Forecast Discussions. Fully self-hostable; no
-API keys required.
+MesoQL is an open-source query engine for semantic search over weather data. It exposes a
+**GraphQL HTTP API** backed by vector search (OpenSearch k-NN) and local LLM inference (Ollama).
+Fully self-hostable; no API keys required.
 
-Every query is a hybrid query: structured filters narrow the search space, semantic similarity
-drives ranking, and an LLM synthesizes or explains results.
+Every query is hybrid: structured filters narrow the search space, semantic similarity drives
+ranking, and an optional LLM clause synthesizes or explains results.
 
 ## Requirements
 
-- Java 17+
-- Maven 3.8+
-- OpenSearch 2.x with the k-NN plugin enabled
-- Ollama with `nomic-embed-text` and `llama3` pulled
+- Java 21
+- Docker Desktop (for OpenSearch and Ollama)
+- [`just`](https://github.com/casey/just) — `brew install just`
 
 ## Quick Start
 
 ```bash
-# Pull required Ollama models
-ollama pull nomic-embed-text
-ollama pull llama3
-
-# Index NOAA storm events
-mesoql index --source storm_events --data ./StormEvents_2023.csv
-
-# Run a query
-mesoql query --inline "SEARCH storm_events WHERE SEMANTIC(\"tornado with no warning\") AND state IN (\"Kansas\", \"Oklahoma\") LIMIT 5"
-
-# Or from a file
-mesoql query my_query.mql
+just up             # start OpenSearch + Ollama
+just pull-models    # pull nomic-embed-text and llama3 (~4 GB, first run only)
+just jar            # build the fat JAR
+just serve          # start the HTTP server at :8080
 ```
 
-## Query Language
+Open the GraphiQL playground at **http://localhost:8080/graphiql** to explore interactively.
 
-```sql
-SEARCH storm_events
-WHERE SEMANTIC("tornado that formed rapidly without warning")
-  AND state IN ("Kansas", "Oklahoma", "Texas")
-  AND year BETWEEN 2000 AND 2020
-  AND fatalities > 0
-SYNTHESIZE "what atmospheric conditions allowed rapid tornado formation?"
-LIMIT 10
+## Example Query
+
+```graphql
+{
+  search(source: STORM_EVENTS, input: {
+    semantic: "tornado that formed rapidly without warning"
+    filters: {
+      in: [{ field: "state", values: ["KS", "OK", "TX"] }]
+      comparisons: [{ field: "fatalities", op: GT, value: "0" }]
+    }
+    synthesize: "what atmospheric conditions allowed rapid tornado formation?"
+    limit: 10
+  }) {
+    hits {
+      ... on StormEventHit {
+        eventId
+        state
+        eventType
+        fatalities
+        narrative
+      }
+    }
+    synthesis
+  }
+}
 ```
 
-```sql
-SEARCH forecast_discussions
-WHERE SEMANTIC("unexpected ridge breakdown over the Pacific")
-  AND region = "Pacific Northwest"
-  AND season = "winter"
-CLUSTER BY THEME
+```graphql
+{
+  search(source: FORECAST_DISCUSSIONS, input: {
+    semantic: "unexpected ridge breakdown over the Pacific"
+    filters: {
+      in: [
+        { field: "region", values: ["Pacific Northwest"] }
+        { field: "season", values: ["winter"] }
+      ]
+    }
+    clusterByTheme: true
+    limit: 20
+  }) {
+    hits {
+      ... on ForecastDiscussionHit {
+        office
+        issuanceTime
+        text
+      }
+    }
+    clusters
+  }
+}
 ```
 
-```sql
-SEARCH storm_events
-WHERE SEMANTIC("flooding caused by a stalled frontal boundary")
-  AND damage_property > 1000000
-EXPLAIN
-LIMIT 5
-```
+## Indexing Data
 
-See [docs/BUILDING.md](docs/BUILDING.md) for the full build guide and [docs/](docs/) for
-component-level documentation.
+```bash
+# Index NOAA Storm Events CSV
+just index-storm ./StormEvents_2023.csv
+
+# Poll ingestion job status
+just index-status <jobId>
+
+# Index NWS Area Forecast Discussions
+just index-afd
+
+# Show index stats
+just stats
+```
 
 ## Data Sources
 
@@ -69,6 +98,14 @@ component-level documentation.
   from 1950 onward; public domain
 - [NWS Area Forecast Discussions](https://api.weather.gov/products/types/AFD): daily
   meteorologist-authored forecast discussions; public domain
+
+## Documentation
+
+- [`docs/graphql.md`](docs/graphql.md) — GraphQL schema reference and example queries
+- [`docs/api.md`](docs/api.md) — HTTP API reference: `/graphql`, `/graphiql`, `/admin/*`
+- [`docs/opensearch.md`](docs/opensearch.md) — index mappings and hybrid query construction
+- [`docs/ingestion.md`](docs/ingestion.md) — data acquisition and ingestion pipeline
+- [`docs/BUILDING.md`](docs/BUILDING.md) — build guide and Gradle project layout
 
 ## License
 
