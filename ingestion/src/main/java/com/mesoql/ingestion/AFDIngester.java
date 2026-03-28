@@ -82,8 +82,9 @@ public class AFDIngester {
      * Fetches AFD products, chunks them, embeds each chunk, and indexes new chunks.
      *
      * @param sinceDate the lower bound for ingestion
+     * @return the number of chunks actually indexed (skips already-indexed chunks)
      */
-    public void ingest(String sinceDate) {
+    public int ingest(String sinceDate) {
         try {
             searchService.createForecastDiscussionsIndex();
 
@@ -139,6 +140,7 @@ public class AFDIngester {
             }
 
             log.info("AFD ingestion complete: {} chunks indexed", toIndex.size());
+            return toIndex.size();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new MesoQLException("AFD ingestion failed", e);

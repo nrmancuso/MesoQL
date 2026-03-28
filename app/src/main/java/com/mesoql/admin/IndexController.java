@@ -52,8 +52,8 @@ public class IndexController {
 
         Thread.ofVirtual().start(() -> {
             try {
-                stormEventsIngester.ingest(tempFile);
-                jobStore.markDone(jobId, 0);
+                final int docsIndexed = stormEventsIngester.ingest(tempFile);
+                jobStore.markDone(jobId, docsIndexed);
             } catch (Exception e) {
                 jobStore.markFailed(jobId, e.getMessage());
             } finally {
@@ -79,8 +79,8 @@ public class IndexController {
 
         Thread.ofVirtual().start(() -> {
             try {
-                afdIngester.ingest(since);
-                jobStore.markDone(jobId, 0);
+                final int docsIndexed = afdIngester.ingest(since);
+                jobStore.markDone(jobId, docsIndexed);
             } catch (Exception e) {
                 jobStore.markFailed(jobId, e.getMessage());
             }
