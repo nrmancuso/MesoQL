@@ -1,0 +1,2 @@
+mesoql:
+  nws-api-url: http://localhost:${local.server.port}/nws
