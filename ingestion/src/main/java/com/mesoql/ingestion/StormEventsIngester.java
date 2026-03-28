@@ -52,8 +52,10 @@ public class StormEventsIngester {
 
     /**
      * Reads the given CSV file and indexes all new storm events into OpenSearch.
+     *
+     * @return the number of documents actually indexed (skips already-indexed events)
      */
-    public void ingest(Path csvFile) {
+    public int ingest(Path csvFile) {
         try {
             searchService.createStormEventsIndex();
             final List<Map<String, Object>> events = parseCsv(csvFile);
@@ -96,6 +98,7 @@ public class StormEventsIngester {
             }
 
             log.info("Ingestion complete: {} events indexed", toIndex.size());
+            return toIndex.size();
         } catch (IOException | CsvValidationException e) {
             throw new MesoQLException("Storm events ingestion failed", e);
         }
