@@ -1,10 +1,12 @@
 package com.mesoql.integration;
 
-import com.mesoql.integration.support.AppServerExtension;
+import com.mesoql.MesoQLApplication;
 import com.mesoql.integration.support.GraphQLClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.io.IOException;
 
@@ -12,12 +14,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests that the GraphQL API rejects invalid inputs with descriptive error messages.
- * Does not require seeded index data — only the app server needs to be running.
+ * Does not require seeded index data — only the Spring context needs to be running.
  */
-@ExtendWith(AppServerExtension.class)
+@SpringBootTest(
+    classes = MesoQLApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 class GraphQLValidationTest {
 
-    private static final GraphQLClient CLIENT = new GraphQLClient();
+    @LocalServerPort
+    private int port;
+
+    private GraphQLClient client;
+
+    @BeforeEach
+    void setUp() {
+        this.client = new GraphQLClient("http://localhost:" + port + "/graphql");
+    }
 
     @Test
     @DisplayName("Reject unknown field in filter with error response")
@@ -31,9 +44,9 @@ class GraphQLValidationTest {
             }
             """;
 
-        final String response = CLIENT.execute(query);
+        final String response = client.execute(query);
 
-        assertTrue(CLIENT.hasErrors(response),
+        assertTrue(client.hasErrors(response),
             "Expected validation error for unknown field but got: " + response);
         assertTrue(response.contains("\"errors\""),
             "Response should contain errors array: " + response);
@@ -51,9 +64,9 @@ class GraphQLValidationTest {
             }
             """;
 
-        final String response = CLIENT.execute(query);
+        final String response = client.execute(query);
 
-        assertTrue(CLIENT.hasErrors(response),
+        assertTrue(client.hasErrors(response),
             "Expected validation error for IN on numeric field but got: " + response);
         assertTrue(response.contains("\"errors\""),
             "Response should contain errors array: " + response);
@@ -71,9 +84,9 @@ class GraphQLValidationTest {
             }
             """;
 
-        final String response = CLIENT.execute(query);
+        final String response = client.execute(query);
 
-        assertTrue(CLIENT.hasErrors(response),
+        assertTrue(client.hasErrors(response),
             "Expected validation error for BETWEEN on keyword field but got: " + response);
         assertTrue(response.contains("\"errors\""),
             "Response should contain errors array: " + response);
@@ -92,9 +105,9 @@ class GraphQLValidationTest {
             }
             """;
 
-        final String response = CLIENT.execute(query);
+        final String response = client.execute(query);
 
-        assertTrue(CLIENT.hasErrors(response),
+        assertTrue(client.hasErrors(response),
             "Expected error for mutually exclusive synthesize + clusterByTheme but got: " + response);
         assertTrue(response.contains("\"errors\""),
             "Response should contain errors array: " + response);
@@ -111,9 +124,9 @@ class GraphQLValidationTest {
             }
             """;
 
-        final String response = CLIENT.execute(query);
+        final String response = client.execute(query);
 
-        assertTrue(CLIENT.hasErrors(response),
+        assertTrue(client.hasErrors(response),
             "Expected GraphQL schema error for unknown source but got: " + response);
         assertTrue(response.contains("\"errors\""),
             "Response should contain errors array: " + response);

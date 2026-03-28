@@ -8,10 +8,10 @@ import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Common test utilities for integration tests.
- * Provides methods for polling ingestion jobs and seeding test data.
  * Data seeding is thread-safe and happens once per test execution.
  */
 public final class TestHelper {
@@ -19,7 +19,7 @@ public final class TestHelper {
     private static final Duration INGEST_TIMEOUT = Duration.ofMinutes(3);
     private static final long POLL_INTERVAL_MS = 2000L;
     private static final HttpClient HTTP = HttpClient.newHttpClient();
-    private static volatile boolean dataSeedInitialized = false;
+    private static final AtomicBoolean DATA_SEED_INITIALIZED = new AtomicBoolean(false);
     private static final Object SEED_LOCK = new Object();
 
     private TestHelper() {
@@ -27,59 +27,58 @@ public final class TestHelper {
     }
 
     /**
-     * Seeds all test data (storm events and forecast discussions) once at the beginning
-     * of the test suite. Subsequent calls are no-ops. Thread-safe.
+     * Seeds all test data (storm events and forecast discussions) once per JVM run.
+     * Subsequent calls are no-ops. Thread-safe.
      *
+     * @param baseUrl the server base URL (e.g. {@code http://localhost:8080})
      * @throws IOException if the file cannot be read or HTTP communication fails
      * @throws InterruptedException if ingestion is interrupted
      * @throws IllegalStateException if an ingestion job fails or times out
      */
-    public static void ensureDataSeeded() throws IOException, InterruptedException {
-        if (!dataSeedInitialized) {
+    public static void ensureDataSeeded(String baseUrl) throws IOException, InterruptedException {
+        if (!DATA_SEED_INITIALIZED.get()) {
             synchronized (SEED_LOCK) {
-                if (!dataSeedInitialized) {
-                    seedData();
-                    dataSeedInitialized = true;
+                if (!DATA_SEED_INITIALIZED.get()) {
+                    seedData(baseUrl);
+                    DATA_SEED_INITIALIZED.set(true);
                 }
             }
         }
     }
 
     /**
-     * Seeds all test data. Called once by ensureDataSeeded().
+     * Seeds all test data. Called once by {@link #ensureDataSeeded(String)}.
      */
-    private static void seedData() throws IOException, InterruptedException {
+    private static void seedData(String baseUrl) throws IOException, InterruptedException {
         final Path fixture = IntegrationEnvironment.repoRoot()
             .resolve("integration-tests/fixtures/storm-events.csv");
-        indexStormEvents(fixture);
-        indexForecastDiscussions();
+        indexStormEvents(baseUrl, fixture);
+        indexForecastDiscussions(baseUrl);
     }
 
     /**
      * Uploads a CSV file to the storm events index endpoint and polls until ingestion is complete.
      *
+     * @param baseUrl the server base URL
      * @param fixture path to the CSV file
-     * @throws IOException if the file cannot be read or HTTP communication fails
-     * @throws InterruptedException if polling is interrupted
-     * @throws IllegalStateException if the ingestion job fails or times out
      */
-    public static void indexStormEvents(Path fixture) throws IOException, InterruptedException {
-        final GraphQLClient client = new GraphQLClient();
+    public static void indexStormEvents(String baseUrl, Path fixture)
+            throws IOException, InterruptedException {
+        final GraphQLClient client = new GraphQLClient(baseUrl + "/graphql");
         final String responseBody = client.uploadFile(
-            IntegrationEnvironment.adminIndexEndpoint() + "/storm-events", fixture);
-        pollUntilDone(GraphQLClient.extractJobId(responseBody));
+            baseUrl + "/admin/index/storm-events", fixture);
+        pollUntilDone(baseUrl, GraphQLClient.extractJobId(responseBody));
     }
 
     /**
      * Triggers forecast discussions ingestion from the NWS API and polls until complete.
      *
-     * @throws IOException if HTTP communication fails
-     * @throws InterruptedException if polling is interrupted
-     * @throws IllegalStateException if the request fails or the ingestion job fails/times out
+     * @param baseUrl the server base URL
      */
-    public static void indexForecastDiscussions() throws IOException, InterruptedException {
+    public static void indexForecastDiscussions(String baseUrl)
+            throws IOException, InterruptedException {
         final HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(IntegrationEnvironment.adminIndexEndpoint() + "/forecast-discussions"))
+            .uri(URI.create(baseUrl + "/admin/index/forecast-discussions"))
             .timeout(Duration.ofSeconds(30))
             .POST(HttpRequest.BodyPublishers.noBody())
             .build();
@@ -91,23 +90,22 @@ public final class TestHelper {
                     + ": " + response.body());
         }
 
-        pollUntilDone(GraphQLClient.extractJobId(response.body()));
+        pollUntilDone(baseUrl, GraphQLClient.extractJobId(response.body()));
     }
 
     /**
      * Polls an ingestion job endpoint until it reaches a terminal state (DONE or FAILED).
      *
+     * @param baseUrl the server base URL
      * @param jobId the UUID of the ingestion job
-     * @return the final response body when the job is complete
-     * @throws IOException if HTTP communication fails
-     * @throws InterruptedException if polling is interrupted
-     * @throws IllegalStateException if the job fails or times out
+     * @return the final response body when the job reaches a terminal state
      */
-    public static String pollUntilTerminal(String jobId) throws IOException, InterruptedException {
+    public static String pollUntilTerminal(String baseUrl, String jobId)
+            throws IOException, InterruptedException {
         final Instant deadline = Instant.now().plus(INGEST_TIMEOUT);
         while (Instant.now().isBefore(deadline)) {
             final HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(IntegrationEnvironment.adminIndexEndpoint() + "/" + jobId))
+                .uri(URI.create(baseUrl + "/admin/index/" + jobId))
                 .timeout(Duration.ofSeconds(10))
                 .GET()
                 .build();
@@ -122,19 +120,12 @@ public final class TestHelper {
         throw new IllegalStateException("Job " + jobId + " did not reach terminal state within timeout");
     }
 
-    /**
-     * Polls an ingestion job endpoint until it reaches DONE state.
-     *
-     * @param jobId the UUID of the ingestion job
-     * @throws IOException if HTTP communication fails
-     * @throws InterruptedException if polling is interrupted
-     * @throws IllegalStateException if the job fails or times out
-     */
-    private static void pollUntilDone(String jobId) throws IOException, InterruptedException {
+    private static void pollUntilDone(String baseUrl, String jobId)
+            throws IOException, InterruptedException {
         final Instant deadline = Instant.now().plus(INGEST_TIMEOUT);
         while (Instant.now().isBefore(deadline)) {
             final HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(IntegrationEnvironment.adminIndexEndpoint() + "/" + jobId))
+                .uri(URI.create(baseUrl + "/admin/index/" + jobId))
                 .timeout(Duration.ofSeconds(10))
                 .GET()
                 .build();
