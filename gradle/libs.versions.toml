@@ -1,29 +1,22 @@
 [versions]
-antlr = "4.13.1"
 checkstyle-tool = "13.3.0"
 httpcore5 = "5.4.2"
-jline = "3.27.1"
 junit = "6.0.3"
 opencsv = "5.9"
 opensearch-java = "2.6.0"
 opensearch-rest-client = "2.11.0"
-picocli-spring-boot-starter = "4.7.5"
 spotbugs-plugin = "6.2.4"
 spotbugs-tool = "4.9.3"
 spring-boot = "4.0.5"
 
 [libraries]
-antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
-antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
 httpcore5 = { module = "org.apache.httpcomponents.core5:httpcore5", version.ref = "httpcore5" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
-jline = { module = "org.jline:jline", version.ref = "jline" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 opencsv = { module = "com.opencsv:opencsv", version.ref = "opencsv" }
 opensearch-java = { module = "org.opensearch.client:opensearch-java", version.ref = "opensearch-java" }
 opensearch-rest-client = { module = "org.opensearch.client:opensearch-rest-client", version.ref = "opensearch-rest-client" }
-picocli-spring-boot-starter = { module = "info.picocli:picocli-spring-boot-starter", version.ref = "picocli-spring-boot-starter" }
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }

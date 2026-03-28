@@ -1,7 +1,6 @@
 package com.mesoql.search;
 
 import com.mesoql.MesoQLException;
-import com.mesoql.ast.QueryAST;
 import com.mesoql.config.MesoQLConfig;
 import org.apache.http.HttpHost;
 import org.opensearch.client.json.JsonData;
@@ -18,7 +17,6 @@ import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +70,7 @@ public class OpenSearchService {
     public SearchResponse<Map> hybridSearch(
             String index,
             float[] queryVector,
-            List<QueryAST.Filter> filters,
+            List<FilterInput> filters,
             int topK) throws IOException {
 
         final String vecField = vectorField(index);
@@ -91,9 +89,6 @@ public class OpenSearchService {
             );
         }
 
-        // Combine k-NN with bool filter: use script_score or nested bool approach
-        // since opensearch-java 2.6.0 doesn't have a native hybrid query builder.
-        // We use bool must with knn + filter as a pragmatic approach.
         final List<Query> filterQueries = filters.stream()
             .map(this::filterToQuery)
             .toList();
@@ -134,41 +129,40 @@ public class OpenSearchService {
         return client.indices().stats(s -> s.index(index));
     }
 
-    private Query filterToQuery(QueryAST.Filter filter) {
+    private Query filterToQuery(FilterInput filter) {
         return switch (filter) {
-            case QueryAST.InFilter f -> Query.of(q -> q
+            case InFilterInput f -> Query.of(q -> q
                 .terms(t -> t.field(f.field()).terms(tv -> tv
                     .value(f.values().stream().map(FieldValue::of).toList())
                 ))
             );
-            case QueryAST.BetweenFilter f -> Query.of(q -> q
-                .range(r -> r.field(f.field()).gte(JsonData.of(f.low())).lte(JsonData.of(f.high())))
+            case BetweenFilterInput f -> Query.of(q -> q
+                .range(r -> r.field(f.field()).gte(JsonData.of(f.min())).lte(JsonData.of(f.max())))
             );
-            case QueryAST.ComparisonFilter f -> comparisonToQuery(f);
+            case ComparisonFilterInput f -> comparisonToQuery(f);
         };
     }
 
-    private Query comparisonToQuery(QueryAST.ComparisonFilter f) {
+    private Query comparisonToQuery(ComparisonFilterInput f) {
         return switch (f.op()) {
-            case "=" -> Query.of(q -> q.term(t -> t.field(f.field()).value(FieldValue.of(f.value()))));
-            case "!=" -> Query.of(q -> q.bool(b -> b.mustNot(
+            case EQ -> Query.of(q -> q.term(t -> t.field(f.field()).value(FieldValue.of(f.value()))));
+            case NEQ -> Query.of(q -> q.bool(b -> b.mustNot(
                 Query.of(q2 -> q2.term(t -> t.field(f.field()).value(FieldValue.of(f.value()))))
             )));
-            case ">", ">=", "<", "<=" -> {
+            case GT, GTE, LT, LTE -> {
                 final double val = Double.parseDouble(f.value());
                 yield Query.of(q -> q.range(r -> {
                     r.field(f.field());
                     switch (f.op()) {
-                        case ">"  -> r.gt(JsonData.of(val));
-                        case ">=" -> r.gte(JsonData.of(val));
-                        case "<"  -> r.lt(JsonData.of(val));
-                        case "<=" -> r.lte(JsonData.of(val));
-                        default -> throw new MesoQLException("Unknown operator: " + f.op());
+                        case GT  -> r.gt(JsonData.of(val));
+                        case GTE -> r.gte(JsonData.of(val));
+                        case LT  -> r.lt(JsonData.of(val));
+                        case LTE -> r.lte(JsonData.of(val));
+                        default  -> throw new MesoQLException("Unknown operator: " + f.op());
                     }
                     return r;
                 }));
             }
-            default -> throw new MesoQLException("Unknown operator: " + f.op());
         };
     }
 

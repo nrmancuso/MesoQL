@@ -1,5 +1,4 @@
 dependencies {
-    implementation(project(":parser"))
     implementation(platform(libs.spring.boot.bom))
     implementation(libs.spring.boot.starter)
     implementation(libs.bundles.opensearch.core)
