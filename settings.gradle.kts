@@ -13,4 +13,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MesoQL"
 
-include("core", "ingestion", "app")
+include("core", "ingestion", "app", "integration-tests")
