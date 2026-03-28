@@ -5,6 +5,7 @@ dependencies {
     testImplementation(project(":app"))
     testImplementation(platform(libs.spring.boot.bom))
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.web)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

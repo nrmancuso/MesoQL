@@ -80,56 +80,6 @@ public final class GraphQLClient {
         return response.body();
     }
 
-    /**
-     * Returns true if the response body contains a top-level {@code "errors"} key.
-     */
-    public boolean hasErrors(String responseBody) {
-        return responseBody.contains("\"errors\"");
-    }
-
-    /**
-     * Returns true if the response body contains a non-empty {@code "hits"} array.
-     */
-    public boolean hasHits(String responseBody) {
-        final int hitsIdx = responseBody.indexOf("\"hits\"");
-        if (hitsIdx < 0) {
-            return false;
-        }
-        final int bracketIdx = responseBody.indexOf('[', hitsIdx);
-        if (bracketIdx < 0) {
-            return false;
-        }
-        final int closingIdx = responseBody.indexOf(']', bracketIdx);
-        if (closingIdx < 0) {
-            return false;
-        }
-        final String hitsContent = responseBody.substring(bracketIdx + 1, closingIdx).trim();
-        return !hitsContent.isEmpty();
-    }
-
-    /**
-     * Extracts the {@code jobId} string value from a JSON response body.
-     *
-     * @param responseBody JSON containing a {@code "jobId"} field
-     * @return the job ID string
-     * @throws IllegalStateException if the field is missing or malformed
-     */
-    public static String extractJobId(String responseBody) {
-        final int keyIdx = responseBody.indexOf("\"jobId\"");
-        if (keyIdx < 0) {
-            throw new IllegalStateException("No jobId in response: " + responseBody);
-        }
-        final int quoteStart = responseBody.indexOf('"', keyIdx + 8);
-        if (quoteStart < 0) {
-            throw new IllegalStateException("Malformed jobId in response: " + responseBody);
-        }
-        final int quoteEnd = responseBody.indexOf('"', quoteStart + 1);
-        if (quoteEnd < 0) {
-            throw new IllegalStateException("Malformed jobId in response: " + responseBody);
-        }
-        return responseBody.substring(quoteStart + 1, quoteEnd);
-    }
-
     private static String buildRequestBody(String query) {
         final String escaped = query
             .replace("\\", "\\\\")

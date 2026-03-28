@@ -22,7 +22,7 @@ just jar            # build the fat JAR
 just serve          # start the HTTP server at :8080
 ```
 
-Open the GraphiQL playground at **http://localhost:8080/graphiql** to explore interactively.
+Open the [GraphiQL playground](http://localhost:8080/graphiql) to explore interactively.
 
 ## Example Query
 
