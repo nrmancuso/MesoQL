@@ -15,10 +15,11 @@ Local deployment via Docker Compose for services, with MesoQL running from the b
 `docker-compose.yml` defines OpenSearch and Ollama as services with named volumes for data
 persistence and health checks for readiness. Port mappings:
 
+- `8080` — MesoQL HTTP server (GraphQL at `/graphql`, admin at `/admin/*`)
 - `9200` — OpenSearch
 - `11434` — Ollama
 
-MesoQL runs on the host via `just mesoql` (the bootJar), connecting to services at
+MesoQL runs on the host via `just serve` (the bootJar), connecting to services at
 `localhost:9200` and `localhost:11434`.
 
 ## Volumes
@@ -43,6 +44,11 @@ just logs opensearch # follow logs for a service
 just pull-models     # pull nomic-embed-text and llama3 into Ollama
 just jar             # build fat JAR
 just test            # run unit tests
+just serve           # start the MesoQL HTTP server at :8080
+just index-storm file=<csv>  # index a NOAA Storm Events CSV (returns job ID)
+just index-afd       # index NWS forecast discussions (returns job ID)
+just index-status job_id=<id>  # poll ingestion job status
+just stats           # show index stats
 ```
 
 ## Prerequisites
@@ -55,4 +61,4 @@ just test            # run unit tests
 - [[architecture/Overview]] — component dependency order
 - [[components/OpenSearch]] — index mappings and k-NN config
 - [[components/Ollama]] — models pulled by `just pull-models`
-- [[components/CLI]] — fat JAR packaging
+- [[components/GraphQL]] — HTTP API and resolver design
