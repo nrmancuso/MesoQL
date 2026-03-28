@@ -20,17 +20,19 @@ with `must` (k-NN) + `filter` (structured clauses). Note: `opensearch-java` 2.6.
 hybrid query builder, so this uses the typed bool approach instead. Index creation uses the
 low-level REST client (`performRequest`) with raw JSON since `withJson` is not available in 2.6.0.
 
-## Query Planner: Field Validation
+## Field Validation
 
-`QueryPlanner` validates field names and types against static per-source schemas **before** any
-network calls. Supported field types: `KEYWORD`, `INTEGER`, `DATE`.
+`InputValidator` (a Spring `@Component` in `core/src/main/java/com/mesoql/search/`) validates
+field names and types against static per-source schemas **before** any network calls. It is called
+by the GraphQL resolver (`SearchResolver`) before execution. Supported field types: `KEYWORD`,
+`INTEGER`, `DATE`.
 
 Validation rules:
 
 - Field must exist in source schema
 - `BETWEEN` only on numeric/date fields
 - `IN` only on keyword fields
-- `SYNTHESIZE` and `CLUSTER BY THEME` cannot both be present
+- `synthesize` and `clusterByTheme` cannot both be present
 - `season` values: `spring`, `summer`, `fall`, `winter`
 - `state` values: valid two-letter US abbreviations
 
@@ -47,5 +49,5 @@ Set `knn.memory.circuit_breaker.enabled: false` in `opensearch.yml` for local de
 
 ## Related
 
-- [[components/Grammar]] — AST filter types that map to bool query clauses
+- [[components/GraphQL]] — resolver and input validation design
 - [[components/Ingestion]] — index creation and bulk indexing

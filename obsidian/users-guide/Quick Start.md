@@ -13,18 +13,47 @@ This handles everything:
 3. Checks for required models and pulls any that are missing (~4 GB on first run)
 4. Builds the MesoQL JAR
 5. Indexes NWS Area Forecast Discussions from the live API
-6. Drops you into the interactive shell
+6. Starts the HTTP server
 
-```text
-MesoQL (type \q to quit)
+## Start the server
 
-mesoql>
+```bash
+just serve
 ```
+
+The server starts at `http://localhost:8080`. GraphQL endpoint: `POST /graphql`. GraphiQL
+playground: `http://localhost:8080/graphiql`.
 
 ## First query
 
-```sql
-mesoql> SEARCH forecast_discussions WHERE SEMANTIC("winter storm warning") LIMIT 5
+Using curl:
+
+```bash
+curl -X POST http://localhost:8080/graphql \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "query": "query($input: SearchInput!) { search(source: FORECAST_DISCUSSIONS, input: $input) { hits { ... on ForecastDiscussionHit { discussionId office text } } } }",
+    "variables": {
+      "input": {"semantic": "winter storm warning", "limit": 5}
+    }
+  }'
+```
+
+Or open the GraphiQL playground at [http://localhost:8080/graphiql](http://localhost:8080/graphiql)
+and run:
+
+```graphql
+{
+  search(source: FORECAST_DISCUSSIONS, input: {semantic: "winter storm warning", limit: 5}) {
+    hits {
+      ... on ForecastDiscussionHit {
+        discussionId
+        office
+        text
+      }
+    }
+  }
+}
 ```
 
 ## Stopping
@@ -36,7 +65,6 @@ just clean          # stops services and deletes all data
 
 ## Next steps
 
-- [[users-guide/Query Language]] — full grammar reference with examples
+- [[users-guide/GraphQL API]] — full query reference with examples
 - [[users-guide/Data Ingestion]] — loading NOAA Storm Events CSVs
-- [[users-guide/Shell]] — shell features, history, and commands
 - [[users-guide/Deployment]] — service management details

@@ -40,24 +40,21 @@ existing ones rather than duplicating. Keep notes concise and interlinked.
 
 ## Project Overview
 
-MesoQL is a self-hostable query engine for semantic search over weather data. It combines a
-SQL-style DSL (parsed with ANTLR4) with vector search (OpenSearch k-NN) and local LLM inference
-(Ollama). No external API keys required.
+MesoQL is a self-hostable query engine for semantic search over weather data. It exposes a GraphQL
+HTTP API backed by vector search (OpenSearch k-NN) and local LLM inference (Ollama). No external
+API keys required.
 
 Data sources: NOAA storm event narratives and NWS Area Forecast Discussions.
 
 ## Build Commands
 
 ```bash
-./gradlew build             # Build fat JAR (includes ANTLR4 source generation)
+./gradlew build             # Build fat JAR
 ./gradlew compileJava       # Compile only
 ./gradlew test              # Run tests
 ./gradlew test --tests FooTest  # Run a single test class
 ./gradlew bootJar           # Build executable Spring Boot JAR
 ```
-
-The Gradle `antlr` plugin auto-generates parser/lexer from `src/main/antlr/MesoQL.g4` into
-`build/generated-sources/antlr/main/java` during compile.
 
 ## Local Stack
 
@@ -65,58 +62,40 @@ The Gradle `antlr` plugin auto-generates parser/lexer from `src/main/antlr/MesoQ
 just up             # starts OpenSearch + Ollama via Docker Compose
 just pull-models    # pulls nomic-embed-text and llama3 into Ollama
 just jar            # builds fat JAR
-just mesoql         # starts interactive shell
+just serve          # starts the MesoQL HTTP server at :8080
 ```
 
 ## Key Dependencies
 
 | Dependency | Version | Purpose |
 |---|---|---|
-| Spring Boot | 3.4.x | Framework, DI, config binding, fat JAR |
-| ANTLR4 | 4.13.x | Grammar + parser generation |
+| Spring Boot | 4.x | Framework, DI, config binding, fat JAR |
+| spring-boot-starter-graphql | (BOM) | GraphQL runtime + Spring MVC integration |
+| graphql-java-extended-scalars | latest | `Long` scalar for `damageProperty` |
 | OpenSearch Java Client | 2.6.0 | Vector search |
-| picocli-spring-boot-starter | 4.7.5 | CLI (integrated with Spring Boot) |
-| JLine | 3.27.x | Interactive shell (line editing, history) |
 | OpenCSV | 5.9 | CSV ingestion |
 
 Java 21. Jackson is provided by Spring Boot.
 
 ## Architecture
 
-### Component Dependency Order (also the implementation phases)
+### Component Dependency Order
 
 ```text
-Grammar (ANTLR4) → Parser/AST → Query Planner → Query Executor
-                                                    ├── OpenSearch Client
-                                                    └── Ollama Client
-                                                         ↑
-                                              Ingestion Pipeline
-                                                    ↑
-                                                  CLI
+HTTP API (spring-graphql)
+    └── SearchResolver
+            └── InputValidator  ← field schema validation
+            └── Query Executor
+                    ├── OpenSearch Client
+                    └── Ollama Client
+                         ↑
+               Ingestion Pipeline
 ```
 
-### Grammar (`src/main/resources/MesoQL.g4`)
-
-Case-insensitive ANTLR4 grammar. Every query requires `SEMANTIC(...)` as the mandatory clause;
-structured filters are optional enhancements. The `source` rule is the extension point for new data
-sources (requires a one-line grammar change + lexer token).
-
-### AST (`MesoQLVisitor.java` + `QueryAST.java`)
-
-Visitor pattern (not listener) over the ANTLR4 parse tree. The AST uses sealed interfaces and
-records:
-
-```text
-Query(SearchClause, WhereClause, List<OutputClause>)
-  WhereClause → SemanticClause (required) + List<Filter>
-  Filter subtypes: InFilter, BetweenFilter, ComparisonFilter
-  OutputClause subtypes: SynthesizeClause, ClusterClause, ExplainClause, LimitClause
-```
-
-### Query Planner
+### InputValidator
 
 Validates field names and types against static per-source schemas **before** any network calls. Fail
-fast before touching OpenSearch or Ollama.
+fast before touching OpenSearch or Ollama. Lives in `core/src/main/java/com/mesoql/search/`.
 
 ### OpenSearch
 
@@ -128,7 +107,7 @@ Two indices: `storm_events` and `forecast_discussions`. Both use 768-dim k-NN ve
 HTTP calls via `java.net.http.HttpClient` (no SDK). Two models:
 
 - `nomic-embed-text` — embeddings (used at both index time and query time)
-- `llama3` — generation for `SYNTHESIZE`, `EXPLAIN`, and `CLUSTER BY THEME` output clauses
+- `llama3` — generation for `synthesize`, `explain`, and `clusterByTheme` output clauses
 
 ### Ingestion
 
@@ -138,20 +117,15 @@ HTTP calls via `java.net.http.HttpClient` (no SDK). Two models:
   embedding
 - Both ingesters skip already-indexed docs (incremental); batch embed in groups of 32 with
   rate-limiting; bulk index to OpenSearch
-
-### CLI (picocli + JLine)
-
-`just mesoql` starts the interactive shell (like `psql`). Subcommands available via
-`just mesoql <cmd>`: `query`, `index`, `validate`, `stats`, `shell`. Shell uses JLine for line
-editing and persistent history (`~/.mesoql_history`).
+- Triggered via `POST /admin/index/*` endpoints; returns job ID for polling
 
 ## Documentation
 
 Detailed implementation specs live in `docs/`:
 
-- `docs/grammar.md` — ANTLR4 setup, visitor pattern, AST type hierarchy
+- `docs/graphql.md` — GraphQL schema reference, field tables, example queries
+- `docs/api.md` — HTTP API reference: `/graphql`, `/graphiql`, `/admin/*`; running the server
 - `docs/opensearch.md` — index mappings, hybrid query construction, field validation
 - `docs/ollama.md` — embedding/generation calls, prompt design per output clause
 - `docs/ingestion.md` — data acquisition (NOAA FTP, NWS API), chunking, bulk indexing
-- `docs/cli.md` — picocli + Spring Boot structure, output modes, fat JAR packaging
 - `docs/BUILDING.md` — full build order, Gradle project layout, stack setup
