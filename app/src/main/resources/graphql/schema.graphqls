@@ -76,5 +76,5 @@ type SearchResponse {
 }
 
 type Query {
-  search(source: Source!, input: SearchInput!): SearchResponse!
+  search(source: Source!, input: SearchInput!): SearchResponse
 }

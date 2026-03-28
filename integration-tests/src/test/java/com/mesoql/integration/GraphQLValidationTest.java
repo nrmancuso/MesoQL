@@ -1,13 +1,11 @@
 package com.mesoql.integration;
 
-import com.mesoql.MesoQLApplication;
 import com.mesoql.integration.support.GraphQLClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.io.IOException;
@@ -16,11 +14,7 @@ import java.io.IOException;
  * Tests that the GraphQL API rejects invalid inputs with descriptive error messages.
  * Does not require seeded index data — only the Spring context needs to be running.
  */
-@SpringBootTest(
-    classes = MesoQLApplication.class,
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
-class GraphQLValidationTest {
+class GraphQLValidationTest extends IntegrationTest {
 
     @LocalServerPort
     private int port;
@@ -51,6 +45,7 @@ class GraphQLValidationTest {
         final String response = client.execute(query);
         final String expected = """
             {
+              "data": {"search": null},
               "errors": [{"message": "Unknown field 'unknown_field' for source 'storm_events'"}]
             }
             """;
@@ -77,6 +72,7 @@ class GraphQLValidationTest {
         final String response = client.execute(query);
         final String expected = """
             {
+              "data": {"search": null},
               "errors": [{"message": "IN filter only applies to keyword fields, but 'fatalities' is INTEGER"}]
             }
             """;
@@ -103,6 +99,7 @@ class GraphQLValidationTest {
         final String response = client.execute(query);
         final String expected = """
             {
+              "data": {"search": null},
               "errors": [{"message": "BETWEEN filter does not apply to keyword fields, but 'state' is KEYWORD"}]
             }
             """;
@@ -130,6 +127,7 @@ class GraphQLValidationTest {
         final String response = client.execute(query);
         final String expected = """
             {
+              "data": {"search": null},
               "errors": [{"message": "synthesize and clusterByTheme cannot both be set"}]
             }
             """;
@@ -151,7 +149,7 @@ class GraphQLValidationTest {
         final String response = client.execute(query);
         final String expected = """
             {
-              "errors": [{}]
+              "errors": [{"message": "Validation error (WrongType@[search]) : argument 'source' with value 'EnumValue{name='UNKNOWN_SOURCE'}' is not a valid 'Source' - Literal value not in allowable values for enum 'Source' - 'EnumValue{name='UNKNOWN_SOURCE'}'"}]
             }
             """;
 

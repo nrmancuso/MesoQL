@@ -1,6 +1,5 @@
 package com.mesoql.integration;
 
-import com.mesoql.MesoQLApplication;
 import com.mesoql.integration.support.GraphQLClient;
 import com.mesoql.integration.support.TestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,7 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.io.IOException;
@@ -17,11 +15,7 @@ import java.io.IOException;
  * Smoke tests for the GraphQL search endpoint against both data sources.
  * Requires a running OpenSearch and Ollama stack.
  */
-@SpringBootTest(
-    classes = MesoQLApplication.class,
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
-class GraphQLSearchSmokeTest {
+class GraphQLSearchSmokeTest extends IntegrationTest {
 
     @LocalServerPort
     private int port;
