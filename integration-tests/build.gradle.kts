@@ -5,6 +5,7 @@ dependencies {
     testImplementation(project(":app"))
     testImplementation(platform(libs.spring.boot.bom))
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation("com.fasterxml.jackson.core:jackson-databind")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
