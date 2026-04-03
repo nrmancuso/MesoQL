@@ -10,7 +10,7 @@ spotbugs-tool = "4.9.3"
 spring-boot = "4.0.5"
 
 [libraries]
-graphql-extended-scalars = { module = "com.graphql-java:graphql-java-extended-scalars", version = "22.0" }
+graphql-extended-scalars = { module = "com.graphql-java:graphql-java-extended-scalars", version = "24.0" }
 httpcore5 = { module = "org.apache.httpcomponents.core5:httpcore5", version.ref = "httpcore5" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
